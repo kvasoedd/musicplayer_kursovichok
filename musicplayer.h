@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QListWidget>
 #include <QFileDialog>
+#include <QDir>
+#include <QFileInfoList>
 #include "playlist.h"
 #include "musiccontroller.h"
 QT_BEGIN_NAMESPACE
@@ -32,6 +34,8 @@ private slots:
     void on_buttonAdd_clicked();
 
     void on_volumeSlider_valueChanged(int value);
+
+    void on_buttonRemove_clicked();
 
 private:
     Ui::MusicPlayer *ui;

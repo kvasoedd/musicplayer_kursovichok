@@ -49,16 +49,56 @@ void MusicPlayer::on_buttonPrevious_clicked()
 
 void MusicPlayer::on_buttonAdd_clicked()
 {
-    QString filePath = QFileDialog::getOpenFileName(this, "Выберите аудиофайл", "", "Audio Files (*.mp3 *.wav)");
+    //новая реализация с добавлением папки и сортивкой по типу файла
+    QString folderPath = QFileDialog::getExistingDirectory(this, "Select a folder with audio files");
+    if (folderPath.isEmpty())
+        return;
+
+    QDir dir(folderPath);
+    // Устанавливаем фильтры для нужных аудиоформатов
+    QStringList filters;
+    filters << "*.mp3" << "*.wav" << "*.flac" << "*.aac";
+    dir.setNameFilters(filters);
+
+    // Получаем список файлов в выбранной папке
+    QFileInfoList fileList = dir.entryInfoList(QDir::Files);
+
+    // Добавляем каждый найденный файл в плейлист
+    for (const QFileInfo &fileInfo : fileList) {
+        Track newTrack;
+        newTrack.filePath = fileInfo.absoluteFilePath();
+        newTrack.title = fileInfo.baseName();
+        // При необходимости можно добавить извлечение метаданных
+
+        playlist.addTrack(newTrack);
+    }
+
+    // Обновляем пользовательский интерфейс (например, QListWidget)
+    updatePlaylistUI();
+
+    //старая реализация с добавлением треков поштучно
+    /*
+    QString filePath = QFileDialog::getOpenFileName(this, "Select an audio file", "", "Audio Files (*.mp3 *.wav *.flac *.aac);; All Files (*.*)");
     if (!filePath.isEmpty()) {
         Track newTrack;
         newTrack.filePath = filePath;
         newTrack.title = QFileInfo(filePath).baseName();
         playlist.addTrack(newTrack);
         updatePlaylistUI();
-    }
+    } */
 }
 
+void MusicPlayer::on_buttonRemove_clicked()
+{
+    // Получаем индекс выбранного элемента в QListWidget
+    int selectedIndex = ui->listWidget->currentRow();
+    if (selectedIndex >= 0) {
+        // Удаляем трек из плейлиста
+        playlist.removeTrack(selectedIndex);
+        // Обновляем UI, чтобы отобразить актуальный список треков
+        updatePlaylistUI();
+    }
+}
 
 void MusicPlayer::on_volumeSlider_valueChanged(int value)
 {
@@ -66,4 +106,3 @@ void MusicPlayer::on_volumeSlider_valueChanged(int value)
     double volume = value / 100.0;
     musicController.setVolume(volume);
 }
-
