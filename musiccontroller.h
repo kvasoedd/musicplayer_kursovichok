@@ -18,11 +18,13 @@ public:
     void pause();
     void setVolume(double volume);
     void setPosition(qint64 pos);  // Для перемотки по треку
+    QMediaPlayer::PlaybackState getPlaybackState() const;
 
 signals:
     // Сигналы для проброса информации о позиции и длительности трека
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
+    void trackChanged();
 
 private:
     QMediaPlayer* player;

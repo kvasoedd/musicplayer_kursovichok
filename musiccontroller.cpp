@@ -36,6 +36,7 @@ void MusicController::play() {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         // Запуск воспроизведения
         player->play();
+        emit trackChanged(); //Новый сигнал
     }
 }
 
@@ -44,12 +45,17 @@ void MusicController::pause() {
         player->pause();
 }
 
+QMediaPlayer::PlaybackState MusicController::getPlaybackState() const {
+    return player->playbackState();
+}
+
 void MusicController::next() {
     if (!playlist) return;
     Track* track = playlist->getNextTrack();
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
+        emit trackChanged();
     }
 }
 
@@ -59,9 +65,14 @@ void MusicController::previous() {
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
+        emit trackChanged();
     }
 }
 
 void MusicController::setVolume(double volume) {
     audioOutput->setVolume(volume);
+}
+
+void MusicController::setPosition(qint64 position) {
+    player->setPosition(position);
 }

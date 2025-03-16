@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>918</width>
-    <height>600</height>
+    <width>909</width>
+    <height>565</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,24 +17,17 @@
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>470</y>
+      <x>220</x>
+      <y>400</y>
       <width>512</width>
       <height>80</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="buttonPlay">
+      <widget class="QPushButton" name="buttonPlayPause">
        <property name="text">
         <string>Play</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonPause">
-       <property name="text">
-        <string>Pause</string>
        </property>
       </widget>
      </item>
@@ -64,8 +57,8 @@
    <widget class="QSlider" name="volumeSlider">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>470</y>
+      <x>740</x>
+      <y>400</y>
       <width>20</width>
       <height>81</height>
      </rect>
@@ -85,8 +78,8 @@
      <rect>
       <x>10</x>
       <y>70</y>
-      <width>241</width>
-      <height>281</height>
+      <width>211</width>
+      <height>171</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="playlistLayout">
@@ -97,23 +90,84 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
+     <item row="1" column="1">
+      <widget class="QPushButton" name="buttonRemove">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="2">
       <widget class="QListWidget" name="listWidget"/>
      </item>
     </layout>
    </widget>
-   <widget class="QSlider" name="progressSlider">
+   <widget class="QSlider" name="positionSlider">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>40</y>
+      <x>350</x>
+      <y>340</y>
       <width>371</width>
       <height>31</height>
      </rect>
     </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
     <property name="orientation">
      <enum>Qt::Orientation::Horizontal</enum>
     </property>
+   </widget>
+   <widget class="QLabel" name="currentTrackLabel">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>280</y>
+      <width>271</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LayoutDirection::LeftToRight</enum>
+    </property>
+    <property name="text">
+     <string>no tracks to play :(</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>370</y>
+      <width>371</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="labelCurrentTime">
+       <property name="text">
+        <string>00:00</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelTotalTime">
+       <property name="text">
+        <string>00:00</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -121,7 +175,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>918</width>
+     <width>909</width>
      <height>21</height>
     </rect>
    </property>
