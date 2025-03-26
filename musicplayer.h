@@ -23,15 +23,19 @@ public:
     ~MusicPlayer();
 
 private slots:
-    void on_buttonPlay_clicked();
-
-    void on_buttonPause_clicked();
+    void on_buttonPlayPause_clicked();
 
     void on_buttonNext_clicked();
 
     void on_buttonPrevious_clicked();
 
+    void on_buttonRandom_clicked();
+
     void on_buttonAdd_clicked();
+
+    void on_buttonRemove_clicked();
+
+    void on_buttonClear_clicked();
 
     void on_volumeSlider_valueChanged(int value);
 
@@ -40,10 +44,6 @@ private slots:
     void updatePosition(qint64 position);              // Слот для обновления положения слайдера
 
     void updateDuration(qint64 duration);              // Слот для установки максимального значения слайдера
-
-    void on_buttonPlayPause_clicked();
-
-    void on_buttonRemove_clicked();
 
 
 private:

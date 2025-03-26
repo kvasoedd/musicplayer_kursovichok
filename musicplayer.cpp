@@ -33,27 +33,44 @@ void MusicPlayer::updatePlaylistUI() {
     }
 }
 
-void MusicPlayer::on_buttonPlay_clicked()
-{
-    musicController.play();
+
+void MusicPlayer::on_buttonPlayPause_clicked() {
+    if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
+        musicController.pause();
+    } else {
+        musicController.play();
+        updateCurrentTrackInfo();  // Обновляем отображение текущего трека
+    }
+    updatePlayPauseButton();  // Обновление текста кнопки
 }
 
-
-void MusicPlayer::on_buttonPause_clicked()
-{
-    musicController.pause();
+void MusicPlayer::updatePlayPauseButton() {
+    if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
+        ui->buttonPlayPause->setText("Pause");  // Можно заменить на значок "⏸"
+    } else {
+        ui->buttonPlayPause->setText("Play");   // Можно заменить на значок "▶️"
+    }
 }
-
 
 void MusicPlayer::on_buttonNext_clicked()
 {
     musicController.next();
 }
 
-
 void MusicPlayer::on_buttonPrevious_clicked()
 {
     musicController.previous();
+}
+
+void MusicPlayer::on_buttonRandom_clicked()
+{
+    musicController.toggleRandom();
+
+    if (musicController.isRandomEnabled()) {
+        ui->buttonRandom->setText("Random: ON");
+    } else {
+        ui->buttonRandom->setText("Random: OFF");
+    }
 }
 
 
@@ -110,6 +127,14 @@ void MusicPlayer::on_buttonRemove_clicked()
     }
 }
 
+void MusicPlayer::on_buttonClear_clicked()
+{
+    playlist.clear();
+    ui->listWidget->clear();
+    emit musicController.trackChanged();
+}
+
+
 void MusicPlayer::on_volumeSlider_valueChanged(int value)
 {
     // Преобразуем значение из диапазона [0, 100] в [0.0, 1.0]
@@ -143,23 +168,6 @@ QString MusicPlayer::formatTime(qint64 timeMillis) {
         return QTime(0, minutes, seconds).toString("mm:ss");
 }
 
-void MusicPlayer::on_buttonPlayPause_clicked() {
-    if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
-        musicController.pause();
-    } else {
-        musicController.play();
-        updateCurrentTrackInfo();  // Обновляем отображение текущего трека
-    }
-    updatePlayPauseButton();  // Обновление текста кнопки
-}
-
-void MusicPlayer::updatePlayPauseButton() {
-    if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
-        ui->buttonPlayPause->setText("Pause");  // Можно заменить на значок "⏸"
-    } else {
-        ui->buttonPlayPause->setText("Play");   // Можно заменить на значок "▶️"
-    }
-}
 
 void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
@@ -170,3 +178,4 @@ void MusicPlayer::updateCurrentTrackInfo() {
         ui->currentTrackLabel->setText("No tracks to play =(");
     }
 }
+

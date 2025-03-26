@@ -20,6 +20,11 @@ public:
     void setPosition(qint64 pos);  // Для перемотки по треку
     QMediaPlayer::PlaybackState getPlaybackState() const;
 
+    // Методы для режима случайного воспроизведения
+    void setRandomEnabled(bool enabled);
+    void toggleRandom();
+    bool isRandomEnabled() const;
+
 signals:
     // Сигналы для проброса информации о позиции и длительности трека
     void positionChanged(qint64 position);
@@ -30,6 +35,7 @@ private:
     QMediaPlayer* player;
     QAudioOutput* audioOutput;
     Playlist* playlist = nullptr;
+    bool randomEnabled = false;
 };
 
 #endif // MUSICCONTROLLER_H

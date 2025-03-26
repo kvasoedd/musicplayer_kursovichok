@@ -5,6 +5,7 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
+
     // Подключаем сигнал изменения статуса медиаплеера
     connect(player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
         // Если трек завершился, автоматически переходим к следующему
@@ -21,6 +22,7 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
 void MusicController::setPlaylist(Playlist* playlist) {
     this->playlist = playlist;
 }
+
 
 void MusicController::play() {
     // Если плеер уже в состоянии паузы, просто продолжить воспроизведение
@@ -51,7 +53,14 @@ QMediaPlayer::PlaybackState MusicController::getPlaybackState() const {
 
 void MusicController::next() {
     if (!playlist) return;
-    Track* track = playlist->getNextTrack();
+
+    Track* track = nullptr;
+    if (randomEnabled) {
+        track = playlist->getRandomTrack();
+    } else {
+        track = playlist->getNextTrack();
+    }
+
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
@@ -61,6 +70,7 @@ void MusicController::next() {
 
 void MusicController::previous() {
     if (!playlist) return;
+
     Track* track = playlist->getPreviousTrack();
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
@@ -68,6 +78,20 @@ void MusicController::previous() {
         emit trackChanged();
     }
 }
+
+
+void MusicController::setRandomEnabled(bool enabled) {
+    randomEnabled = enabled;
+}
+
+void MusicController::toggleRandom() {
+    randomEnabled = !randomEnabled;
+}
+
+bool MusicController::isRandomEnabled() const {
+    return randomEnabled;
+}
+
 
 void MusicController::setVolume(double volume) {
     audioOutput->setVolume(volume);
