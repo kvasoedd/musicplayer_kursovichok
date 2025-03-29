@@ -46,9 +46,9 @@ void MusicPlayer::on_buttonPlayPause_clicked() {
 
 void MusicPlayer::updatePlayPauseButton() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
-        ui->buttonPlayPause->setText("Pause");  // Можно заменить на значок "⏸"
+        ui->buttonPlayPause->setText("⏸");  // Можно заменить на значок "⏸"
     } else {
-        ui->buttonPlayPause->setText("Play");   // Можно заменить на значок "▶️"
+        ui->buttonPlayPause->setText("▶️");   // Можно заменить на значок "▶️"
     }
 }
 
@@ -70,6 +70,17 @@ void MusicPlayer::on_buttonRandom_clicked()
         ui->buttonRandom->setText("Random: ON");
     } else {
         ui->buttonRandom->setText("Random: OFF");
+    }
+}
+
+// Слот для включения/выключения зацикливания
+void MusicPlayer::on_buttonLoop_clicked() {
+    musicController.toggleLoop();
+
+    if (musicController.isLoopEnabled()) {
+        ui->buttonLoop->setText("Loop: ON");
+    } else {
+        ui->buttonLoop->setText("Loop: OFF");
     }
 }
 
@@ -143,7 +154,6 @@ void MusicPlayer::on_volumeSlider_valueChanged(int value)
 }
 
 void MusicPlayer::on_positionSlider_sliderMoved(int position) {
-    // Перемотка трека через MusicController
     musicController.setPosition(position);
 }
 

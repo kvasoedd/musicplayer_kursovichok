@@ -25,6 +25,13 @@ public:
     void toggleRandom();
     bool isRandomEnabled() const;
 
+    // Методы для зацикливания
+    void setLoopEnabled(bool enabled);
+    void toggleLoop();
+    bool isLoopEnabled() const;
+    void setPlaylist();
+    void restartCurrentTrack();
+
 signals:
     // Сигналы для проброса информации о позиции и длительности трека
     void positionChanged(qint64 position);
@@ -36,6 +43,7 @@ private:
     QAudioOutput* audioOutput;
     Playlist* playlist = nullptr;
     bool randomEnabled = false;
+    bool loopEnabled = false;  // Флаг зацикливания
 };
 
 #endif // MUSICCONTROLLER_H

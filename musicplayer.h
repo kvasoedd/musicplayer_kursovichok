@@ -43,9 +43,9 @@ private slots:
 
     void updatePosition(qint64 position);              // Слот для обновления положения слайдера
 
-    void updateDuration(qint64 duration);              // Слот для установки максимального значения слайдера
+    void updateDuration(qint64 duration);             // Слот для установки максимального значения слайдера
 
-
+    void on_buttonLoop_clicked();
 private:
     Ui::MusicPlayer *ui;
     Playlist playlist;

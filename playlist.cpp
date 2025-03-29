@@ -48,7 +48,6 @@ const QVector<Track>& Playlist::getTracks() const {
     return tracks;
 }
 
-
 Track* Playlist::getRandomTrack() {
     if (tracks.isEmpty())
         return nullptr;

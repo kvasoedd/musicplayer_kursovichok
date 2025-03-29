@@ -46,6 +46,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonLoop">
+       <property name="text">
+        <string>Loop</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="buttonRandom">
        <property name="text">
         <string>Random</string>
@@ -158,6 +165,9 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QSlider" name="positionSlider">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
        <property name="maximum">
         <number>100</number>
        </property>

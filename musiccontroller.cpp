@@ -8,9 +8,12 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
 
     // Подключаем сигнал изменения статуса медиаплеера
     connect(player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
-        // Если трек завершился, автоматически переходим к следующему
+        // Если трек закончился
         if (status == QMediaPlayer::EndOfMedia) {
-            next();
+            if (isLoopEnabled())
+                restartCurrentTrack();
+            else
+                next();
         }
     });
 
@@ -79,6 +82,27 @@ void MusicController::previous() {
     }
 }
 
+void MusicController::setLoopEnabled(bool enabled) {
+    loopEnabled = enabled;
+}
+
+void MusicController::toggleLoop() {
+    loopEnabled = !loopEnabled;
+}
+
+bool MusicController::isLoopEnabled() const {
+    return loopEnabled;
+}
+
+void MusicController::restartCurrentTrack() {
+    if (!playlist) return;
+    Track* track = playlist->getCurrentTrack();
+    if (track) {
+        player->setPosition(0);
+        player->play();
+        emit trackChanged();
+    }
+}
 
 void MusicController::setRandomEnabled(bool enabled) {
     randomEnabled = enabled;
@@ -91,7 +115,6 @@ void MusicController::toggleRandom() {
 bool MusicController::isRandomEnabled() const {
     return randomEnabled;
 }
-
 
 void MusicController::setVolume(double volume) {
     audioOutput->setVolume(volume);
