@@ -17,7 +17,8 @@ SOURCES += \
 HEADERS += \
     musiccontroller.h \
     musicplayer.h \
-    playlist.h
+    playlist.h \
+    seekslider.h
 
 FORMS += \
     musicplayer.ui

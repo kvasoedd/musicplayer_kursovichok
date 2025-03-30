@@ -9,13 +9,23 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     ui->setupUi(this);
     musicController.setPlaylist(&playlist);
 
+    // Создаем объект SeekSlider и заменяем стандартный слайдер
+    positionSlider = new SeekSlider(this);
+    positionSlider->setOrientation(Qt::Horizontal);
+    positionSlider->setRange(0, 0);
+    ui->progressLayout->addWidget(positionSlider);  // Добавляем в макет
+
+    musicController.setPlaylist(&playlist);
+
+    // Подключаем сигнал перемотки
+    connect(positionSlider, &QSlider::sliderMoved, &musicController, &MusicController::setPosition);
+    connect(&musicController, &MusicController::positionChanged, positionSlider, &QSlider::setValue);
+    connect(&musicController, &MusicController::durationChanged, positionSlider, &QSlider::setMaximum);
+
     // Подключаем сигналы от MusicController к слотам
     connect(&musicController, &MusicController::positionChanged, this, &MusicPlayer::updatePosition);
     connect(&musicController, &MusicController::durationChanged, this, &MusicPlayer::updateDuration);
     connect(&musicController, &MusicController::trackChanged, this, &MusicPlayer::updateCurrentTrackInfo);
-
-    // Устанавливаем начальные значения для слайдера
-    ui->positionSlider->setRange(0, 0);
 
     updatePlayPauseButton();
 }
@@ -157,13 +167,12 @@ void MusicPlayer::on_positionSlider_sliderMoved(int position) {
     musicController.setPosition(position);
 }
 
+
 void MusicPlayer::updatePosition(qint64 position) {
-    ui->positionSlider->setValue(static_cast<int>(position));
     ui->labelCurrentTime->setText(formatTime(position));  // Обновление текущего времени
 }
 
 void MusicPlayer::updateDuration(qint64 duration) {
-    ui->positionSlider->setRange(0, static_cast<int>(duration));
     ui->labelTotalTime->setText(formatTime(duration));  // Обновление общего времени
 }
 
@@ -188,4 +197,3 @@ void MusicPlayer::updateCurrentTrackInfo() {
         ui->currentTrackLabel->setText("No tracks to play =(");
     }
 }
-

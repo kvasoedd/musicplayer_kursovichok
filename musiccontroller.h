@@ -43,7 +43,6 @@ private:
     QAudioOutput* audioOutput;
     Playlist* playlist = nullptr;
     bool randomEnabled = false;
-    bool loopEnabled = false;  // Флаг зацикливания
+    bool loopEnabled = false;
 };
-
 #endif // MUSICCONTROLLER_H

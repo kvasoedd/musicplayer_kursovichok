@@ -17,10 +17,10 @@
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>400</y>
-      <width>512</width>
-      <height>80</height>
+      <x>231</x>
+      <y>479</y>
+      <width>641</width>
+      <height>41</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="playbackPanel">
@@ -82,8 +82,8 @@
    <widget class="QSlider" name="volumeSlider">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>400</y>
+      <x>880</x>
+      <y>440</y>
       <width>20</width>
       <height>81</height>
      </rect>
@@ -103,13 +103,17 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>211</width>
-      <height>231</height>
+      <width>201</width>
+      <height>261</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="playlistLayout">
-     <item row="0" column="0" colspan="2">
-      <widget class="QListWidget" name="listWidget"/>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="buttonRemove">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="buttonAdd">
@@ -118,17 +122,13 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="0" colspan="2">
+      <widget class="QListWidget" name="listWidget"/>
+     </item>
      <item row="2" column="0" colspan="2">
       <widget class="QPushButton" name="buttonClear">
        <property name="text">
         <string>Clear</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="buttonRemove">
-       <property name="text">
-        <string>Remove</string>
        </property>
       </widget>
      </item>
@@ -137,10 +137,10 @@
    <widget class="QLabel" name="currentTrackLabel">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>310</y>
-      <width>271</width>
-      <height>16</height>
+      <x>230</x>
+      <y>400</y>
+      <width>641</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="layoutDirection">
@@ -150,57 +150,102 @@
      <string>No tracks to play :(</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignmentFlag::AlignCenter</set>
+     <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QWidget" name="verticalLayoutWidget">
+   <widget class="QFrame" name="progressFrame">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>350</y>
-      <width>491</width>
+      <x>230</x>
+      <y>435</y>
+      <width>641</width>
       <height>41</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <widget class="QSlider" name="positionSlider">
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
-       </property>
-       <property name="maximum">
-        <number>100</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="timeLayout">
-       <item>
-        <widget class="QLabel" name="labelCurrentTime">
-         <property name="text">
-          <string>00:00</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelTotalTime">
-         <property name="text">
-          <string>00:00</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
+    <property name="frameShape">
+     <enum>QFrame::Shape::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>10</y>
+       <width>541</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="progressLayout">
+      <property name="spacing">
+       <number>1</number>
+      </property>
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetMinAndMaxSize</enum>
+      </property>
+     </layout>
+    </widget>
+    <widget class="QLabel" name="labelTotalTime">
+     <property name="geometry">
+      <rect>
+       <x>590</x>
+       <y>0</y>
+       <width>51</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>1600</width>
+       <height>1600</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>00:00</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelCurrentTime">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>51</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>00:00</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="image">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>200</width>
+      <height>200</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::Box</enum>
+    </property>
+    <property name="text">
+     <string>Album image</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

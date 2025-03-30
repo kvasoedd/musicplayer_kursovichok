@@ -8,6 +8,9 @@
 #include <QFileInfoList>
 #include "playlist.h"
 #include "musiccontroller.h"
+
+#include "seekslider.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MusicPlayer;
@@ -46,6 +49,7 @@ private slots:
     void updateDuration(qint64 duration);             // Слот для установки максимального значения слайдера
 
     void on_buttonLoop_clicked();
+
 private:
     Ui::MusicPlayer *ui;
     Playlist playlist;
@@ -54,6 +58,8 @@ private:
     void updatePlaylistUI();
     void updatePlayPauseButton();
     void updateCurrentTrackInfo();
+
+    SeekSlider* positionSlider;
 
     // Новый метод для форматирования времени
     QString formatTime(qint64 timeMillis);
