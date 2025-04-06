@@ -8,12 +8,12 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
 
     // Подключаем сигнал изменения статуса медиаплеера
     connect(player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
-        // Если трек закончился
         if (status == QMediaPlayer::EndOfMedia) {
-            if (isLoopEnabled())
+            if (isLoopEnabled()) {
                 restartCurrentTrack();
-            else
+            } else {
                 next();
+            }
         }
     });
 
@@ -21,7 +21,6 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
     connect(player, &QMediaPlayer::positionChanged, this, &MusicController::positionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &MusicController::durationChanged);
 }
-
 void MusicController::setPlaylist(Playlist* playlist) {
     this->playlist = playlist;
 }

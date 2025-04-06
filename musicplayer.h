@@ -6,9 +6,12 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QFileInfoList>
+#include <QLabel>
+#include <QMovie>
+#include <QString>
+#include <QStringList>
 #include "playlist.h"
 #include "musiccontroller.h"
-
 #include "seekslider.h"
 
 QT_BEGIN_NAMESPACE
@@ -42,11 +45,11 @@ private slots:
 
     void on_volumeSlider_valueChanged(int value);
 
-    void on_positionSlider_sliderMoved(int position);  // Новый слот для перемотки
+    void on_positionSlider_sliderMoved(int position);
 
-    void updatePosition(qint64 position);              // Слот для обновления положения слайдера
+    void updatePosition(qint64 position);
 
-    void updateDuration(qint64 duration);             // Слот для установки максимального значения слайдера
+    void updateDuration(qint64 duration);
 
     void on_buttonLoop_clicked();
 
@@ -54,14 +57,15 @@ private:
     Ui::MusicPlayer *ui;
     Playlist playlist;
     MusicController musicController;
-
     void updatePlaylistUI();
     void updatePlayPauseButton();
     void updateCurrentTrackInfo();
-
     SeekSlider* positionSlider;
-
-    // Новый метод для форматирования времени
     QString formatTime(qint64 timeMillis);
+    QStringList gifImages;
+    QLabel *gifLabel;
+    QMovie* gifMovie = nullptr;
+    int currentGif = 0;
+    QString updateGifImage();
 };
 #endif // MUSICPLAYER_H

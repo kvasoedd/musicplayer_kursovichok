@@ -17,7 +17,7 @@ public:
     void previous();
     void pause();
     void setVolume(double volume);
-    void setPosition(qint64 pos);  // Для перемотки по треку
+    void setPosition(qint64 pos);
     QMediaPlayer::PlaybackState getPlaybackState() const;
 
     // Методы для режима случайного воспроизведения

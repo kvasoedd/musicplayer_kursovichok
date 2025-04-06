@@ -1,19 +1,22 @@
 #include "musicplayer.h"
 #include "ui_musicplayer.h"
 #include <QFileInfo>
+#include <ctime>
 
 MusicPlayer::MusicPlayer(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MusicPlayer)
 {
     ui->setupUi(this);
+
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
     musicController.setPlaylist(&playlist);
 
-    // Создаем объект SeekSlider и заменяем стандартный слайдер
     positionSlider = new SeekSlider(this);
     positionSlider->setOrientation(Qt::Horizontal);
     positionSlider->setRange(0, 0);
-    ui->progressLayout->addWidget(positionSlider);  // Добавляем в макет
+    ui->progressLayout->addWidget(positionSlider);
 
     musicController.setPlaylist(&playlist);
 
@@ -28,6 +31,27 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     connect(&musicController, &MusicController::trackChanged, this, &MusicPlayer::updateCurrentTrackInfo);
 
     updatePlayPauseButton();
+
+    gifLabel = new QLabel(this);
+    gifLabel->setVisible(false);
+    gifImages << ":/imgs/gifs/christian-bale-american-psycho.gif"
+              << ":/imgs/gifs/lofi-girl-lofi.gif"
+              << ":/imgs/gifs/cat-headphones.gif"
+              << ":/imgs/gifs/gyllenhaal.gif"
+              << ":/imgs/gifs/dadada.gif"
+              << ":/imgs/gifs/monke.gif"
+              << ":/imgs/gifs/girl.gif"
+              << ":/imgs/gifs/cant-sleep-to-the-beat.gif"
+              << ":/imgs/gifs/bart.gif"
+              << ":/imgs/gifs/djcat.gif"
+              << ":/imgs/gifs/jakedog.gif"
+              << ":/imgs/gifs/john-cena.gif"
+              << ":/imgs/gifs/kid.gif"
+              << ":/imgs/gifs/bateman.gif"
+              << ":/imgs/gifs/spongebob.gif"
+              << ":/imgs/gifs/starlord.gif";
+    gifMovie = new QMovie(gifImages[std::rand() % gifImages.size()]);
+    ui->gifLabel->setMovie(gifMovie);
 }
 
 MusicPlayer::~MusicPlayer()
@@ -37,7 +61,6 @@ MusicPlayer::~MusicPlayer()
 
 void MusicPlayer::updatePlaylistUI() {
     ui->listWidget->clear();
-    // Используем getTracks() для получения списка треков
     for (const Track& track : playlist.getTracks()) {
         ui->listWidget->addItem(track.title);
     }
@@ -47,35 +70,76 @@ void MusicPlayer::updatePlaylistUI() {
 void MusicPlayer::on_buttonPlayPause_clicked() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
         musicController.pause();
+        gifMovie->stop();
+        // gifLabel->setVisible(false);
     } else {
         musicController.play();
-        updateCurrentTrackInfo();  // Обновляем отображение текущего трека
+        // updateCurrentTrackInfo();
+        if (!playlist.getTracks().isEmpty()) {
+            QString gifPath = gifImages[currentGif];
+            if (!gifPath.isEmpty()) {
+                gifLabel->setVisible(true);
+                gifMovie->start();
+            }
+        } else {
+            gifLabel->setVisible(false);
+        }
     }
-    updatePlayPauseButton();  // Обновление текста кнопки
+    updatePlayPauseButton();
 }
 
+
+// Остановить/воспроизвести
 void MusicPlayer::updatePlayPauseButton() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
-        ui->buttonPlayPause->setText("⏸");  // Можно заменить на значок "⏸"
+        ui->buttonPlayPause->setText("⏸");
     } else {
-        ui->buttonPlayPause->setText("▶️");   // Можно заменить на значок "▶️"
+        ui->buttonPlayPause->setText("▶️");
     }
 }
 
+// Включение следующего трека
 void MusicPlayer::on_buttonNext_clicked()
 {
     musicController.next();
+    if (!playlist.getTracks().isEmpty()) {
+        QString gifPath = updateGifImage();
+
+        if (gifMovie) {
+            gifMovie->stop();
+            delete gifMovie;
+        }
+
+        gifMovie = new QMovie(gifPath);
+        ui->gifLabel->setMovie(gifMovie);
+        ui->gifLabel->setVisible(true);
+        gifMovie->start();
+    }
 }
 
+// Включение предыдущего трека
 void MusicPlayer::on_buttonPrevious_clicked()
 {
     musicController.previous();
+    if (!playlist.getTracks().isEmpty()) {
+        QString gifPath = updateGifImage();
+
+        if (gifMovie) {
+            gifMovie->stop();
+            delete gifMovie;
+        }
+
+        gifMovie = new QMovie(gifPath);
+        ui->gifLabel->setMovie(gifMovie);
+        ui->gifLabel->setVisible(true);
+        gifMovie->start();
+    }
 }
 
+// Включения/выключения воспроизведения треков в случайном порядке
 void MusicPlayer::on_buttonRandom_clicked()
 {
     musicController.toggleRandom();
-
     if (musicController.isRandomEnabled()) {
         ui->buttonRandom->setText("Random: ON");
     } else {
@@ -83,10 +147,9 @@ void MusicPlayer::on_buttonRandom_clicked()
     }
 }
 
-// Слот для включения/выключения зацикливания
+// Включения/выключения зацикливания
 void MusicPlayer::on_buttonLoop_clicked() {
     musicController.toggleLoop();
-
     if (musicController.isLoopEnabled()) {
         ui->buttonLoop->setText("Loop: ON");
     } else {
@@ -107,21 +170,15 @@ void MusicPlayer::on_buttonAdd_clicked()
     QStringList filters;
     filters << "*.mp3" << "*.wav" << "*.flac" << "*.aac";
     dir.setNameFilters(filters);
-
     // Получаем список файлов в выбранной папке
     QFileInfoList fileList = dir.entryInfoList(QDir::Files);
-
     // Добавляем каждый найденный файл в плейлист
     for (const QFileInfo &fileInfo : fileList) {
         Track newTrack;
         newTrack.filePath = fileInfo.absoluteFilePath();
         newTrack.title = fileInfo.baseName();
-        // При необходимости можно добавить извлечение метаданных
-
         playlist.addTrack(newTrack);
     }
-
-    // Обновляем пользовательский интерфейс (например, QListWidget)
     updatePlaylistUI();
 
     //старая реализация с добавлением треков поштучно
@@ -138,12 +195,9 @@ void MusicPlayer::on_buttonAdd_clicked()
 
 void MusicPlayer::on_buttonRemove_clicked()
 {
-    // Получаем индекс выбранного элемента в QListWidget
     int selectedIndex = ui->listWidget->currentRow();
     if (selectedIndex >= 0) {
-        // Удаляем трек из плейлиста
         playlist.removeTrack(selectedIndex);
-        // Обновляем UI, чтобы отобразить актуальный список треков
         updatePlaylistUI();
     }
 }
@@ -192,8 +246,34 @@ void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
     if (currentTrack) {
         QString trackInfo = QString("%1").arg(currentTrack->title);
-        ui->currentTrackLabel->setText(trackInfo);  // Установим текст метки
+        ui->currentTrackLabel->setText(trackInfo);
+        if(QMediaPlayer::EndOfMedia){
+            QString gifPath = updateGifImage();
+            if (gifMovie) {
+                gifMovie->stop();
+                delete gifMovie;
+            }
+            gifMovie = new QMovie(gifPath);
+            ui->gifLabel->setMovie(gifMovie);
+            ui->gifLabel->setVisible(true);
+            gifMovie->start();
+        }
     } else {
         ui->currentTrackLabel->setText("No tracks to play =(");
+        gifLabel->setVisible(false);
     }
+}
+
+// Метод обновления GIF
+QString MusicPlayer::updateGifImage() {
+    if (gifImages.isEmpty()) {
+        qWarning() << "gifImages list is empty!";
+        return "";
+    }
+    if (playlist.getTracks().isEmpty()) {
+        return "";
+    }
+    QString gifPath = gifImages[currentGif];
+    currentGif = std::rand() % gifImages.size();
+    return gifPath;
 }

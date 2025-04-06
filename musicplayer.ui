@@ -231,7 +231,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QLabel" name="image">
+   <widget class="QLabel" name="gifLabel">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -244,7 +244,10 @@
      <enum>QFrame::Shape::Box</enum>
     </property>
     <property name="text">
-     <string>Album image</string>
+     <string notr="true"/>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

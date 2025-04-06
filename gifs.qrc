@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/imgs">
+        <file>gifs/christian-bale-american-psycho.gif</file>
+        <file>gifs/lofi-girl-lofi.gif</file>
+        <file>gifs/cat-headphones.gif</file>
+        <file>gifs/gyllenhaal.gif</file>
+        <file>gifs/dadada.gif</file>
+        <file>gifs/monke.gif</file>
+        <file>gifs/girl.gif</file>
+        <file>gifs/cant-sleep-to-the-beat.gif</file>
+        <file>gifs/bart.gif</file>
+        <file>gifs/djcat.gif</file>
+        <file>gifs/jakedog.gif</file>
+        <file>gifs/john-cena.gif</file>
+        <file>gifs/kid.gif</file>
+        <file>gifs/bateman.gif</file>
+        <file>gifs/spongebob.gif</file>
+        <file>gifs/starlord.gif</file>
+    </qresource>
+</RCC>
