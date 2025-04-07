@@ -25,9 +25,14 @@ void MusicController::setPlaylist(Playlist* playlist) {
     this->playlist = playlist;
 }
 
+void MusicController::stop() {
+    player->stop();
+    player->setSource(QUrl());
+}
 
 void MusicController::play() {
     // Если плеер уже в состоянии паузы, просто продолжить воспроизведение
+    if (!playlist || playlist->getTracks().isEmpty()) return;
     if (player->playbackState() == QMediaPlayer::PausedState) {
         player->play();
         return;
@@ -47,6 +52,10 @@ void MusicController::play() {
 void MusicController::pause() {
     if (player->playbackState() == QMediaPlayer::PlayingState)
         player->pause();
+}
+
+QMediaPlayer* MusicController::getPlayer() const {
+    return player;
 }
 
 QMediaPlayer::PlaybackState MusicController::getPlaybackState() const {

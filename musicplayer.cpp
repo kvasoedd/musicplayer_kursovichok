@@ -29,6 +29,8 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     connect(&musicController, &MusicController::positionChanged, this, &MusicPlayer::updatePosition);
     connect(&musicController, &MusicController::durationChanged, this, &MusicPlayer::updateDuration);
     connect(&musicController, &MusicController::trackChanged, this, &MusicPlayer::updateCurrentTrackInfo);
+    connect(musicController.getPlayer(), &QMediaPlayer::playbackStateChanged, this, &MusicPlayer::updatePlayPauseButton);
+
 
     updatePlayPauseButton();
 
@@ -53,6 +55,53 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     currentGif = std::rand() % gifImages.size();
     gifMovie = new QMovie(gifImages[currentGif]);
     ui->gifLabel->setMovie(gifMovie);
+
+    // Воспроизведение / пауза по Space
+    QShortcut* playPauseShortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
+    connect(playPauseShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonPlayPause_clicked);
+
+    // Следующий трек по Right
+    QShortcut* nextShortcut = new QShortcut(QKeySequence(Qt::Key_Right), this);
+    connect(nextShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonNext_clicked);
+
+    // Предыдущий трек по Left
+    QShortcut* prevShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
+    connect(prevShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonPrevious_clicked);
+
+    // Зацикливание трека по CTRL + R
+    QShortcut* loopShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this);
+    connect(loopShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonLoop_clicked);
+
+    // Случайный порядок треков по CTRL + S
+    QShortcut* randomShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    connect(randomShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonRandom_clicked);
+
+    // Громкость вверх по Up
+    QShortcut* volUpShortcut = new QShortcut(QKeySequence(Qt::Key_Up), this);
+    connect(volUpShortcut, &QShortcut::activated, [=]() {
+        int value = ui->volumeSlider->value();
+        ui->volumeSlider->setValue(qMin(value + 10, 100));
+    });
+
+    // Громкость вниз по Down
+    QShortcut* volDownShortcut = new QShortcut(QKeySequence(Qt::Key_Down), this);
+    connect(volDownShortcut, &QShortcut::activated, [=]() {
+        int value = ui->volumeSlider->value();
+        ui->volumeSlider->setValue(qMax(value - 10, 0));
+    });
+
+    // Выклячить звук по M
+    QShortcut* muteShortcut = new QShortcut(QKeySequence(Qt::Key_M), this);
+    connect(muteShortcut, &QShortcut::activated, this, &MusicPlayer::toggleMute);
+
+    // Добавить папку с треками Ctrl + A
+    QShortcut* addfolderShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
+    connect(addfolderShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonAdd_clicked);
+
+    // Очистить очередь Ctrl + C
+    QShortcut* clearShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    connect(clearShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonClear_clicked);
+
 }
 
 MusicPlayer::~MusicPlayer()
@@ -66,7 +115,6 @@ void MusicPlayer::updatePlaylistUI() {
         ui->listWidget->addItem(track.title);
     }
 }
-
 
 void MusicPlayer::on_buttonPlayPause_clicked() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
@@ -207,15 +255,33 @@ void MusicPlayer::on_buttonClear_clicked()
 {
     playlist.clear();
     ui->listWidget->clear();
+    musicController.stop();
+    positionSlider->setValue(0);
+    positionSlider->setRange(0, 0);
+    ui->labelCurrentTime->setText("00:00");
+    ui->labelTotalTime->setText("00:00");
+    gifLabel->setVisible(false);
+    ui->currentTrackLabel->setText("No tracks to play =(");
+    updatePlayPauseButton();
     emit musicController.trackChanged();
 }
-
 
 void MusicPlayer::on_volumeSlider_valueChanged(int value)
 {
     // Преобразуем значение из диапазона [0, 100] в [0.0, 1.0]
     double volume = value / 100.0;
     musicController.setVolume(volume);
+}
+
+void MusicPlayer::toggleMute() {
+    if (!isMuted) {
+        previousVolume = ui->volumeSlider->value();
+        ui->volumeSlider->setValue(0);
+        isMuted = true;
+    } else {
+        ui->volumeSlider->setValue(previousVolume);
+        isMuted = false;
+    }
 }
 
 void MusicPlayer::on_positionSlider_sliderMoved(int position) {
@@ -242,7 +308,6 @@ QString MusicPlayer::formatTime(qint64 timeMillis) {
         return QTime(0, minutes, seconds).toString("mm:ss");
 }
 
-
 void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
     if (currentTrack) {
@@ -265,7 +330,6 @@ void MusicPlayer::updateCurrentTrackInfo() {
     }
 }
 
-// Метод обновления GIF
 QString MusicPlayer::updateGifImage() {
     if (gifImages.isEmpty()) {
         qWarning() << "gifImages list is empty!";

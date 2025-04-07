@@ -10,6 +10,7 @@
 #include <QMovie>
 #include <QString>
 #include <QStringList>
+#include <QShortcut>
 #include "playlist.h"
 #include "musiccontroller.h"
 #include "seekslider.h"
@@ -53,6 +54,8 @@ private slots:
 
     void on_buttonLoop_clicked();
 
+    void toggleMute();
+
 private:
     Ui::MusicPlayer *ui;
     Playlist playlist;
@@ -67,5 +70,7 @@ private:
     QMovie* gifMovie = nullptr;
     int currentGif = 0;
     QString updateGifImage();
+    int previousVolume = 100;
+    bool isMuted = false;
 };
 #endif // MUSICPLAYER_H

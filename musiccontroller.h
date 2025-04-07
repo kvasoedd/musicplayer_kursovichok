@@ -16,9 +16,11 @@ public:
     void next();
     void previous();
     void pause();
+    void stop();
     void setVolume(double volume);
     void setPosition(qint64 pos);
     QMediaPlayer::PlaybackState getPlaybackState() const;
+    QMediaPlayer* getPlayer() const;
 
     // Методы для режима случайного воспроизведения
     void setRandomEnabled(bool enabled);
