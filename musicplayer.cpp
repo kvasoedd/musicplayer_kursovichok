@@ -50,7 +50,8 @@ MusicPlayer::MusicPlayer(QWidget *parent)
               << ":/imgs/gifs/bateman.gif"
               << ":/imgs/gifs/spongebob.gif"
               << ":/imgs/gifs/starlord.gif";
-    gifMovie = new QMovie(gifImages[std::rand() % gifImages.size()]);
+    currentGif = std::rand() % gifImages.size();
+    gifMovie = new QMovie(gifImages[currentGif]);
     ui->gifLabel->setMovie(gifMovie);
 }
 
