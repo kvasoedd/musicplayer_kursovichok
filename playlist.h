@@ -18,13 +18,15 @@ public:
 
     void addTrack(const Track& track);
     void removeTrack(int index);
-    void clear(); //пока не используется. реализовать как очистку очереди
+    void clear();
 
     Track* getCurrentTrack();
     Track* getNextTrack();
     Track* getPreviousTrack();
 
-    Track* getRandomTrack();
+    //Track* getRandomTrack();
+    void enableShuffle();
+    void disableShuffle();
     void setCurrentIndex(int index);
 
     // Новый геттер для доступа к трекам
@@ -32,7 +34,9 @@ public:
 
 private:
     QVector<Track> tracks;
-    int currentIndex;
+    QVector<Track> originalTracks; // для хранения исходного порядка
+    int currentIndex = 0;
+    bool isShuffled = false;       // флаг, включен ли режим перемешивания
 };
 
 #endif // PLAYLIST_H

@@ -65,13 +65,7 @@ QMediaPlayer::PlaybackState MusicController::getPlaybackState() const {
 void MusicController::next() {
     if (!playlist) return;
 
-    Track* track = nullptr;
-    if (randomEnabled) {
-        track = playlist->getRandomTrack();
-    } else {
-        track = playlist->getNextTrack();
-    }
-
+    Track* track = playlist->getNextTrack();
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
@@ -118,6 +112,13 @@ void MusicController::setRandomEnabled(bool enabled) {
 
 void MusicController::toggleRandom() {
     randomEnabled = !randomEnabled;
+    if (playlist) {
+        if (randomEnabled) {
+            playlist->enableShuffle();
+        } else {
+            playlist->disableShuffle();
+        }
+    }
 }
 
 bool MusicController::isRandomEnabled() const {
