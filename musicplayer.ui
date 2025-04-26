@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>909</width>
+    <width>910</width>
     <height>565</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
      <item>
       <widget class="QPushButton" name="buttonRandom">
        <property name="text">
-        <string>Random</string>
+        <string>🔀</string>
        </property>
        <property name="checkable">
         <bool>false</bool>
@@ -52,28 +52,28 @@
      <item>
       <widget class="QPushButton" name="buttonPrevious">
        <property name="text">
-        <string>Previous</string>
+        <string>⏪</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonPlayPause">
        <property name="text">
-        <string>Play</string>
+        <string>▶️</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonNext">
        <property name="text">
-        <string>Next</string>
+        <string>⏩</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonLoop">
        <property name="text">
-        <string>Loop</string>
+        <string>🔄</string>
        </property>
       </widget>
      </item>
@@ -103,11 +103,21 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>201</width>
+      <width>215</width>
       <height>261</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="playlistLayout">
+     <item row="0" column="0" colspan="2">
+      <widget class="QListWidget" name="listWidget"/>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QPushButton" name="buttonClear">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="1">
       <widget class="QPushButton" name="buttonRemove">
        <property name="text">
@@ -119,16 +129,6 @@
       <widget class="QPushButton" name="buttonAdd">
        <property name="text">
         <string>Add</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="2">
-      <widget class="QListWidget" name="listWidget"/>
-     </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QPushButton" name="buttonClear">
-       <property name="text">
-        <string>Clear</string>
        </property>
       </widget>
      </item>
@@ -147,7 +147,7 @@
      <enum>Qt::LayoutDirection::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>No tracks to play :(</string>
+     <string>No tracks to play =(</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -232,6 +232,9 @@
     </widget>
    </widget>
    <widget class="QLabel" name="gifLabel">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -241,19 +244,69 @@
      </rect>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Shape::Box</enum>
+     <enum>QFrame::Shape::NoFrame</enum>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>891</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="playerButton">
+       <property name="text">
+        <string>Player</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="radioButton">
+       <property name="text">
+        <string>Radio</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QFrame" name="pageArea">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>40</y>
+      <width>911</width>
+      <height>481</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+   </widget>
+   <zorder>pageArea</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
+   <zorder>volumeSlider</zorder>
+   <zorder>gridLayoutWidget</zorder>
+   <zorder>currentTrackLabel</zorder>
+   <zorder>progressFrame</zorder>
+   <zorder>gifLabel</zorder>
+   <zorder>horizontalLayoutWidget_2</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>909</width>
+     <width>910</width>
      <height>21</height>
     </rect>
    </property>

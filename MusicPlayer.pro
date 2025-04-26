@@ -12,12 +12,14 @@ SOURCES += \
     main.cpp \
     musiccontroller.cpp \
     musicplayer.cpp \
-    playlist.cpp
+    playlist.cpp \
+    radio.cpp
 
 HEADERS += \
     musiccontroller.h \
     musicplayer.h \
     playlist.h \
+    radio.h \
     seekslider.h
 
 FORMS += \

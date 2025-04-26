@@ -5,8 +5,6 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
-
-    // Подключаем сигнал изменения статуса медиаплеера
     connect(player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
         if (status == QMediaPlayer::EndOfMedia) {
             if (isLoopEnabled()) {
@@ -16,8 +14,6 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
             }
         }
     });
-
-    // Пробрасываем сигналы обновления позиции и длительности
     connect(player, &QMediaPlayer::positionChanged, this, &MusicController::positionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &MusicController::durationChanged);
 }
@@ -31,21 +27,17 @@ void MusicController::stop() {
 }
 
 void MusicController::play() {
-    // Если плеер уже в состоянии паузы, просто продолжить воспроизведение
     if (!playlist || playlist->getTracks().isEmpty()) return;
     if (player->playbackState() == QMediaPlayer::PausedState) {
         player->play();
         return;
     }
-
     if (!playlist || playlist->getTracks().isEmpty()) return;
     Track* track = playlist->getCurrentTrack();
     if (track) {
-        // Загрузка файла в плеер
         player->setSource(QUrl::fromLocalFile(track->filePath));
-        // Запуск воспроизведения
         player->play();
-        emit trackChanged(); //Новый сигнал
+        emit trackChanged();
     }
 }
 
@@ -64,7 +56,6 @@ QMediaPlayer::PlaybackState MusicController::getPlaybackState() const {
 
 void MusicController::next() {
     if (!playlist) return;
-
     Track* track = playlist->getNextTrack();
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));

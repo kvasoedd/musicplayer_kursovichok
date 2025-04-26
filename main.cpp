@@ -1,5 +1,4 @@
 #include "musicplayer.h"
-
 #include <QApplication>
 
 int main(int argc, char *argv[])

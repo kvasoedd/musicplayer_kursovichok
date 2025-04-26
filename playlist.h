@@ -15,28 +15,23 @@ struct Track {
 class Playlist {
 public:
     Playlist() : currentIndex(0) {}
-
     void addTrack(const Track& track);
     void removeTrack(int index);
     void clear();
-
     Track* getCurrentTrack();
     Track* getNextTrack();
     Track* getPreviousTrack();
-
-    //Track* getRandomTrack();
     void enableShuffle();
     void disableShuffle();
     void setCurrentIndex(int index);
-
-    // Новый геттер для доступа к трекам
     const QVector<Track>& getTracks() const;
+    QVector<Track> tracks;
 
 private:
-    QVector<Track> tracks;
-    QVector<Track> originalTracks; // для хранения исходного порядка
+    // QVector<Track> tracks;
+    QVector<Track> originalTracks;
     int currentIndex = 0;
-    bool isShuffled = false;       // флаг, включен ли режим перемешивания
+    bool isShuffled = false;
 };
 
 #endif // PLAYLIST_H

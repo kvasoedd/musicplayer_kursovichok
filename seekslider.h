@@ -15,7 +15,7 @@ protected:
         if (orientation() == Qt::Horizontal) {
             double pos = static_cast<double>(event->position().x()) / width();
             setValue(static_cast<int>(pos * maximum()));
-            emit sliderMoved(value());  // Генерируем сигнал перемотки
+            emit sliderMoved(value());
         }
         QSlider::mousePressEvent(event);
     }

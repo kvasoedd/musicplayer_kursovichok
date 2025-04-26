@@ -11,9 +11,11 @@
 #include <QString>
 #include <QStringList>
 #include <QShortcut>
+#include <QStackedWidget>
 #include "playlist.h"
 #include "musiccontroller.h"
 #include "seekslider.h"
+#include "radio.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,40 +28,32 @@ class MusicPlayer : public QMainWindow
     Q_OBJECT
 
 public:
-    MusicPlayer(QWidget *parent = nullptr);
+    explicit MusicPlayer(QWidget *parent = nullptr);
     ~MusicPlayer();
 
 private slots:
     void on_buttonPlayPause_clicked();
-
     void on_buttonNext_clicked();
-
     void on_buttonPrevious_clicked();
-
     void on_buttonRandom_clicked();
-
     void on_buttonAdd_clicked();
-
     void on_buttonRemove_clicked();
-
     void on_buttonClear_clicked();
-
     void on_volumeSlider_valueChanged(int value);
-
     void on_positionSlider_sliderMoved(int position);
-
     void updatePosition(qint64 position);
-
     void updateDuration(qint64 duration);
-
     void on_buttonLoop_clicked();
-
     void toggleMute();
+    void showRadio();
+    void showPlayer();
 
 private:
     Ui::MusicPlayer *ui;
+    QVBoxLayout *mainLayout;
     Playlist playlist;
     MusicController musicController;
+    Radio *radioPage = nullptr;
     void updatePlaylistUI();
     void updatePlayPauseButton();
     void updateCurrentTrackInfo();
@@ -73,4 +67,5 @@ private:
     int previousVolume = 100;
     bool isMuted = false;
 };
+
 #endif // MUSICPLAYER_H
