@@ -24,13 +24,17 @@ public:
     Track* getNextTrack();
     Track* getPreviousTrack();
 
-    //Track* getRandomTrack();
     void enableShuffle();
     void disableShuffle();
+    void resetShuffleState();
     void setCurrentIndex(int index);
 
-    // Новый геттер для доступа к трекам
+    void insertTrack(int index, const Track& track);
+    int getCurrentIndex() const;
+
+    QVector<Track>& getTracksMutable();
     const QVector<Track>& getTracks() const;
+    const QVector<Track>& getOriginalTracks() const;
 
 private:
     QVector<Track> tracks;

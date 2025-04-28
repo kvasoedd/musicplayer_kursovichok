@@ -31,6 +31,21 @@ Track* Playlist::getCurrentTrack() {
     return &tracks[currentIndex];
 }
 
+int Playlist::getCurrentIndex() const {
+    return currentIndex;
+}
+
+void Playlist::insertTrack(int index, const Track& track) {
+    // Проверка границ
+    if (index < 0 || index > tracks.size())
+        return;
+    tracks.insert(index, track);
+    // Если вставили перед или на текущем треке, смещаем currentIndex вправо
+    if (index <= currentIndex) {
+        ++currentIndex;
+    }
+}
+
 Track* Playlist::getNextTrack() {
     if (tracks.isEmpty()) return nullptr;
     currentIndex = (currentIndex + 1) % tracks.size();
@@ -46,6 +61,10 @@ Track* Playlist::getPreviousTrack() {
 // Реализация геттера
 const QVector<Track>& Playlist::getTracks() const {
     return tracks;
+}
+
+const QVector<Track>& Playlist::getOriginalTracks() const {
+    return originalTracks;
 }
 
 // Метод для включения режима перемешивания
@@ -87,14 +106,11 @@ void Playlist::disableShuffle() {
     }
 }
 
-/* отключено для теста нового перемешивания
-Track* Playlist::getRandomTrack() {
-    if (tracks.isEmpty())
-        return nullptr;
-    int randomIndex = QRandomGenerator::global()->bounded(tracks.size());
-    currentIndex = randomIndex;
-    return &tracks[currentIndex];
-}*/
+void Playlist::resetShuffleState() {
+    // После загрузки из папки считаем, что мы в «чистом» порядке
+    originalTracks.clear();
+    isShuffled = false;
+}
 
 void Playlist::setCurrentIndex(int index) {
     if (index >= 0 && index < tracks.size())
