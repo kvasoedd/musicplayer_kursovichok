@@ -21,11 +21,20 @@ public:
     Track* getCurrentTrack();
     Track* getNextTrack();
     Track* getPreviousTrack();
+
     void enableShuffle();
     void disableShuffle();
+    void resetShuffleState();
     void setCurrentIndex(int index);
-    const QVector<Track>& getTracks() const;
+
     QVector<Track> tracks;
+
+    void insertTrack(int index, const Track& track);
+    int getCurrentIndex() const;
+
+    QVector<Track>& getTracksMutable();
+    const QVector<Track>& getTracks() const;
+    const QVector<Track>& getOriginalTracks() const;
 
 private:
     // QVector<Track> tracks;

@@ -12,6 +12,8 @@
 #include <QStringList>
 #include <QShortcut>
 #include <QStackedWidget>
+#include <QSettings>
+#include <QCloseEvent>
 #include "playlist.h"
 #include "musiccontroller.h"
 #include "seekslider.h"
@@ -32,6 +34,11 @@ public:
     ~MusicPlayer();
 
 private slots:
+    void on_listWidget_modelRowsMoved(const QModelIndex &parent, int start, int end,
+                                      const QModelIndex &destination, int row);
+
+    void on_listWidget_itemDoubleClicked(QListWidgetItem* item);
+
     void on_buttonPlayPause_clicked();
     void on_buttonNext_clicked();
     void on_buttonPrevious_clicked();
@@ -47,6 +54,9 @@ private slots:
     void toggleMute();
     void showRadio();
     void showPlayer();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     Ui::MusicPlayer *ui;
@@ -66,6 +76,11 @@ private:
     QString updateGifImage();
     int previousVolume = 100;
     bool isMuted = false;
+
+    // Сохраняет порядок очереди и флаги Random/Loop
+    void saveState();
+    // Загружает прошлое состояние
+    void loadState();
 };
 
 #endif // MUSICPLAYER_H

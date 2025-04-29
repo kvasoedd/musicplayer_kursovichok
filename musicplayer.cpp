@@ -2,6 +2,7 @@
 #include "ui_musicplayer.h"
 #include <QFileInfo>
 #include <ctime>
+#include <QtGlobal> // для макроса Q_UNUSED
 
 MusicPlayer::MusicPlayer(QWidget *parent)
     : QMainWindow(parent)
@@ -15,6 +16,16 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     ui->pageArea->setLayout(mainLayout);
     radioPage->setVisible(false);
 
+    // Позволить перетаскивать и менять порядок внутри списка
+    ui->listWidget->setDragDropMode(QAbstractItemView::InternalMove);
+    ui->listWidget->setDefaultDropAction(Qt::MoveAction);
+    connect(ui->listWidget->model(),
+            &QAbstractItemModel::rowsMoved,
+            this,
+            &MusicPlayer::on_listWidget_modelRowsMoved);
+
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     musicController.setPlaylist(&playlist);
 
@@ -25,6 +36,14 @@ MusicPlayer::MusicPlayer(QWidget *parent)
 
     connect(ui->playerButton, &QPushButton::clicked, this, &MusicPlayer::showPlayer);
     connect(ui->radioButton, &QPushButton::clicked, this, &MusicPlayer::showRadio);
+
+    loadState();
+    if (!musicController.isRandomEnabled()) {
+        playlist.resetShuffleState();
+    }
+    updatePlaylistUI();
+
+    // Подключаем сигнал перемотки
     connect(positionSlider, &QSlider::sliderMoved, &musicController, &MusicController::setPosition);
     connect(&musicController, &MusicController::positionChanged, positionSlider, &QSlider::setValue);
     connect(&musicController, &MusicController::durationChanged, positionSlider, &QSlider::setMaximum);
@@ -32,6 +51,7 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     connect(&musicController, &MusicController::durationChanged, this, &MusicPlayer::updateDuration);
     connect(&musicController, &MusicController::trackChanged, this, &MusicPlayer::updateCurrentTrackInfo);
     connect(musicController.getPlayer(), &QMediaPlayer::playbackStateChanged, this, &MusicPlayer::updatePlayPauseButton);
+
     updatePlayPauseButton();
     ui->volumeSlider->setValue(50);
 
@@ -106,10 +126,135 @@ void MusicPlayer::updatePlaylistUI() {
     }
 }
 
+void MusicPlayer::closeEvent(QCloseEvent *event) {
+    saveState();
+    QMainWindow::closeEvent(event);
+}
+
+void MusicPlayer::saveState() {
+    QSettings s("IST", "MusicPlayer");
+    s.beginGroup("PlayerState");
+
+    // Порядок файлов
+    QStringList paths;
+    if (musicController.isRandomEnabled()) {
+        // Если рандом включен — сохраняем оригинальный порядок
+        for (const Track &t : playlist.getOriginalTracks())
+            paths << t.filePath;
+    } else {
+        // Иначе сохраняем текущую очередь
+        for (const Track &t : playlist.getTracks())
+            paths << t.filePath;
+    }
+    Track* cur = playlist.getCurrentTrack();
+    if (cur)
+        s.setValue("currentTrackPath", cur->filePath);
+    else
+        s.remove("currentTrackPath");
+    s.setValue("queueOrder", paths);
+
+    // Индекс текущего трека
+    s.setValue("currentIndex", playlist.getCurrentIndex());
+
+    // Флаги режимов
+    s.setValue("randomEnabled", musicController.isRandomEnabled());
+    s.setValue("loopEnabled",   musicController.isLoopEnabled());
+
+    s.endGroup();
+}
+
+void MusicPlayer::loadState() {
+    QSettings s("IST", "MusicPlayer");
+    s.beginGroup("PlayerState");
+
+    // Восстанавливаем очередь
+    QStringList paths = s.value("queueOrder").toStringList();
+
+    playlist.clear();
+    for (const QString &fp : paths) {
+        Track t;
+        t.filePath = fp;
+        t.title    = QFileInfo(fp).baseName();
+        playlist.addTrack(t);
+    }
+
+    // Восстанавливаем режим Random
+    bool randomOn = s.value("randomEnabled", false).toBool();
+    musicController.setRandomEnabled(randomOn);
+
+    // Сброс/перемешивание после загрузки
+    playlist.resetShuffleState();
+    if (randomOn) {
+        playlist.enableShuffle();
+    }
+
+    // Восстанавливаем режим Loop
+    bool loopOn = s.value("loopEnabled", false).toBool();
+    musicController.setLoopEnabled(loopOn);
+
+    //восстановить текущий трек по пути
+        QString savedPath = s.value("currentTrackPath", "").toString();
+    if (!savedPath.isEmpty()) {
+        // Находим в загруженном списке (уже перемешанном, если нужно)
+        const auto &trk = playlist.getTracks();
+        int found = -1;
+        for (int i = 0; i < trk.size(); ++i) {
+            if (trk[i].filePath == savedPath) {
+                found = i;
+                break;
+            }
+        }
+        if (found >= 0) {
+            playlist.setCurrentIndex(found);
+        }
+    }
+
+    s.endGroup();
+
+    // Обновляем UI
+    updatePlaylistUI();
+    ui->listWidget->setCurrentRow(playlist.getCurrentIndex());
+    ui->buttonRandom->setText(randomOn ? "🔀: ON" : "🔀: OFF");
+    ui->buttonLoop->setText(loopOn     ? "🔄: ON"   : "🔄: OFF");
+}
+
+
+void MusicPlayer::on_listWidget_itemDoubleClicked(QListWidgetItem* item) {
+    int row = ui->listWidget->row(item);
+    playlist.setCurrentIndex(row);
+    musicController.play();
+}
+
+void MusicPlayer::on_listWidget_modelRowsMoved(const QModelIndex & /*parent*/,
+                                               int sourceStart,
+                                               int sourceEnd,      // Последняя строка диапазона, который переместили
+                                               const QModelIndex & /*destinationParent*/,
+                                               int destinationRow)
+{
+    // Чтобы убрать предупреждение о неиспользуемом параметре,
+    // макрос Q_UNUSED явно помечает его как «неиспользуемый».
+    Q_UNUSED(sourceEnd);
+
+    // sourceStart — начальный индекс перемещаемой строки
+    // destinationRow — место вставки (до какого индекса)
+    int from = sourceStart;
+    int to   = destinationRow > from ? destinationRow - 1 : destinationRow;
+
+    // Перемещаем в Playlist
+    Track moved = playlist.getTracks().at(from);
+    playlist.removeTrack(from);
+    playlist.insertTrack(to, moved);
+
+    // Обновляем выделение в UI
+    ui->listWidget->setCurrentRow(to);
+}
+
+
 void MusicPlayer::on_buttonPlayPause_clicked() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
         musicController.pause();
         gifMovie->stop();
+        //gifLabel->setVisible(false);
     } else {
         musicController.play();
         if (!playlist.getTracks().isEmpty()) {
@@ -165,6 +310,14 @@ void MusicPlayer::on_buttonPrevious_clicked() {
 
 void MusicPlayer::on_buttonRandom_clicked() {
     musicController.toggleRandom();
+    // Перерисовать список в соответствии с новым порядком
+    updatePlaylistUI();
+
+    // Сбросить подсветку на текущем треке
+    int idx = playlist.getCurrentIndex();
+    ui->listWidget->setCurrentRow(idx);
+
+    // Обновить надпись на кнопке
     if (musicController.isRandomEnabled()) {
         ui->buttonRandom->setText("🔀: ON");
     } else {
@@ -172,6 +325,8 @@ void MusicPlayer::on_buttonRandom_clicked() {
     }
 }
 
+
+// Включения/выключения зацикливания
 void MusicPlayer::on_buttonLoop_clicked() {
     musicController.toggleLoop();
     if (musicController.isLoopEnabled()) {
@@ -197,17 +352,7 @@ void MusicPlayer::on_buttonAdd_clicked() {
         playlist.addTrack(newTrack);
     }
     updatePlaylistUI();
-
-    //старая реализация с добавлением треков поштучно
-    /*
-    QString filePath = QFileDialog::getOpenFileName(this, "Select an audio file", "", "Audio Files (*.mp3 *.wav *.flac *.aac);; All Files (*.*)");
-    if (!filePath.isEmpty()) {
-        Track newTrack;
-        newTrack.filePath = filePath;
-        newTrack.title = QFileInfo(filePath).baseName();
-        playlist.addTrack(newTrack);
-        updatePlaylistUI();
-    } */
+    playlist.resetShuffleState();
 }
 
 void MusicPlayer::on_buttonRemove_clicked() {
@@ -277,12 +422,24 @@ QString MusicPlayer::formatTime(qint64 timeMillis) {
 void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
     if (currentTrack) {
-        QString trackInfo = QString("%1").arg(currentTrack->title);
-        ui->currentTrackLabel->setText(trackInfo);
+        // 1) Обновляем label
+        ui->currentTrackLabel->setText(currentTrack->title);
+
+        // 2) Подсвечиваем текущий трек в списке
+        int idx = playlist.getCurrentIndex();
+        ui->listWidget->setCurrentRow(idx);
+
+        // 3) GIF-логика (как было)
         QString gifPath = updateGifImage();
-        if (gifMovie) {
-            gifMovie->stop();
-            delete gifMovie;
+        if (!gifPath.isEmpty()) {
+            if (gifMovie) {
+                gifMovie->stop();
+                delete gifMovie;
+            }
+            gifMovie = new QMovie(gifPath);
+            ui->gifLabel->setMovie(gifMovie);
+            ui->gifLabel->setVisible(true);
+            gifMovie->start();
         }
         gifMovie = new QMovie(gifPath);
         ui->gifLabel->setMovie(gifMovie);
@@ -293,6 +450,7 @@ void MusicPlayer::updateCurrentTrackInfo() {
         ui->gifLabel->setVisible(false);
     }
 }
+
 
 QString MusicPlayer::updateGifImage() {
     if (gifImages.isEmpty()) {
