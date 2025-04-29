@@ -505,7 +505,9 @@ void MusicPlayer::showPlayer() {
     ui->labelCurrentTime->setVisible(true);
     ui->labelTotalTime->setVisible(true);
     ui->currentTrackLabel->setVisible(true);
-    ui->gifLabel->setVisible(true);
+    if (!playlist.getTracks().isEmpty()) {
+        ui->gifLabel->setVisible(true);
+    }
     radioPage->StopStream();
     radioPage->setVisible(false);
     ui->pageArea->lower();
