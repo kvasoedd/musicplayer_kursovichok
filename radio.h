@@ -25,7 +25,6 @@ private slots:
     void addStation();
     void removeStation();
     void stationSelected();
-    void readProcessOutput();
 
 private:
     QLineEdit *urlEdit;
@@ -34,7 +33,6 @@ private:
     QPushButton *addButton;
     QPushButton *removeButton;
     QListWidget *stationList;
-    QLabel *nowPlayingLabel;
     QProcess *playerProcess;
     void loadStations();
     void saveStations();

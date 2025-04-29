@@ -143,14 +143,20 @@
       <height>31</height>
      </rect>
     </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
     <property name="layoutDirection">
      <enum>Qt::LayoutDirection::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>No tracks to play =(</string>
+     <string>Silence...</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
    <widget class="QFrame" name="progressFrame">
@@ -239,8 +245,8 @@
      <rect>
       <x>10</x>
       <y>320</y>
-      <width>200</width>
-      <height>200</height>
+      <width>214</width>
+      <height>190</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -282,7 +288,7 @@
       <x>-1</x>
       <y>40</y>
       <width>911</width>
-      <height>481</height>
+      <height>501</height>
      </rect>
     </property>
     <property name="frameShape">

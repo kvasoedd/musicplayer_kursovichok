@@ -34,7 +34,6 @@ int Playlist::getCurrentIndex() const {
 }
 
 void Playlist::insertTrack(int index, const Track& track) {
-    // Проверка границ
     if (index < 0 || index > tracks.size())
         return;
     tracks.insert(index, track);
@@ -64,7 +63,6 @@ const QVector<Track>& Playlist::getOriginalTracks() const {
     return originalTracks;
 }
 
-// Метод для включения режима перемешивания
 void Playlist::enableShuffle() {
     if (!isShuffled) {
         originalTracks = tracks;
@@ -97,7 +95,6 @@ void Playlist::disableShuffle() {
 
 
 void Playlist::resetShuffleState() {
-    // После загрузки из папки считаем, что мы в «чистом» порядке
     originalTracks.clear();
     isShuffled = false;
 }

@@ -14,7 +14,6 @@ Radio::Radio(QWidget *parent)
     streamVolume = new QSlider(Qt::Vertical);
     removeButton = new QPushButton("❌ Delete from favorites", this);
     stationList = new QListWidget(this);
-    nowPlayingLabel = new QLabel("🎵 Now playing: ---", this);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QHBoxLayout *controlsLayout = new QHBoxLayout();
@@ -30,7 +29,6 @@ Radio::Radio(QWidget *parent)
     mainLayout->addWidget(addButton);
     mainLayout->addWidget(removeButton);
     mainLayout->addWidget(stationList);
-    mainLayout->addWidget(nowPlayingLabel);
 
     connect(playButton, &QPushButton::clicked, this, [=]() {
         startStream(urlEdit->text());
@@ -39,8 +37,6 @@ Radio::Radio(QWidget *parent)
     connect(removeButton, &QPushButton::clicked, this, &Radio::removeStation);
     connect(stationList, &QListWidget::itemClicked, this, &Radio::stationSelected);
     connect(streamVolume, &QSlider::valueChanged, this, &Radio::setVolume);
-    connect(playerProcess, &QProcess::readyReadStandardOutput, this, &Radio::readProcessOutput);
-    connect(playerProcess, &QProcess::readyReadStandardError, this, &Radio::readProcessOutput);
 
     loadStations();
 }
@@ -101,18 +97,6 @@ void Radio::stationSelected() {
     auto item = stationList->currentItem();
     if (item) {
         urlEdit->setText(item->text());
-    }
-}
-
-void Radio::readProcessOutput() {
-    QString output = QString::fromUtf8(playerProcess->readAllStandardOutput());
-    QString errorOutput = QString::fromUtf8(playerProcess->readAllStandardError());
-    QString combined = output + errorOutput;
-    if (combined.contains("ICY Info:")) {
-        int start = combined.indexOf("StreamTitle='") + QString("StreamTitle='").length();
-        int end = combined.indexOf("';", start);
-        QString title = combined.mid(start, end - start);
-        nowPlayingLabel->setText("🎵 Now playing: " + title);
     }
 }
 

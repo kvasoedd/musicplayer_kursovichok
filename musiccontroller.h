@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QSettings>
 #include "playlist.h"
 
 class MusicController : public QObject {
@@ -29,6 +30,7 @@ public:
     bool isLoopEnabled() const;
     void setPlaylist();
     void restartCurrentTrack();
+    void setVolumeFromSlider(int sliderValue);
 
 signals:
     void positionChanged(qint64 position);

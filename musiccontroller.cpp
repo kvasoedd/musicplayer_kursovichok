@@ -66,7 +66,6 @@ void MusicController::next() {
 
 void MusicController::previous() {
     if (!playlist) return;
-
     Track* track = playlist->getPreviousTrack();
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
@@ -118,6 +117,13 @@ bool MusicController::isRandomEnabled() const {
 
 void MusicController::setVolume(double volume) {
     audioOutput->setVolume(volume);
+    QSettings settings("IST", "MusicPlayer");
+    settings.setValue("volume", volume);
+}
+
+void MusicController::setVolumeFromSlider(int sliderValue) {
+    double volume = sliderValue / 100.0;
+    setVolume(volume);
 }
 
 void MusicController::setPosition(qint64 position) {
