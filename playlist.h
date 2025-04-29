@@ -37,7 +37,6 @@ public:
     const QVector<Track>& getOriginalTracks() const;
 
 private:
-    // QVector<Track> tracks;
     QVector<Track> originalTracks;
     int currentIndex = 0;
     bool isShuffled = false;
