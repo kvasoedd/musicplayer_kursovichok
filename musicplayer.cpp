@@ -80,10 +80,10 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     QShortcut* prevShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
     connect(prevShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonPrevious_clicked);
 
-    QShortcut* loopShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this);
+    QShortcut* loopShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_R), this);
     connect(loopShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonLoop_clicked);
 
-    QShortcut* randomShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    QShortcut* randomShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_S), this);
     connect(randomShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonRandom_clicked);
 
     QShortcut* volUpShortcut = new QShortcut(QKeySequence(Qt::Key_Up), this);
@@ -101,10 +101,10 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     QShortcut* muteShortcut = new QShortcut(QKeySequence(Qt::Key_M), this);
     connect(muteShortcut, &QShortcut::activated, this, &MusicPlayer::toggleMute);
 
-    QShortcut* addfolderShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
+    QShortcut* addfolderShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A), this);
     connect(addfolderShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonAdd_clicked);
 
-    QShortcut* clearShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    QShortcut* clearShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C), this);
     connect(clearShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonClear_clicked);
 }
 
