@@ -29,6 +29,17 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     positionSlider->setRange(0, 0);
     ui->progressLayout->addWidget(positionSlider);
 
+    visualizer = new AudioVisualizer(this);
+    decoder = new AudioDecoder(this);
+    ui->waveLayout->addWidget(visualizer); // добавь layout в .ui
+    connect(decoder, &AudioDecoder::samplesReady, visualizer, &AudioVisualizer::updateSamples);
+    connect(&musicController, &MusicController::trackChanged, this, [this]() {
+        Track* current = playlist.getCurrentTrack();
+        if (current) {
+            decoder->decodeFile(current->filePath);
+        }
+    });
+
     connect(ui->playerButton, &QPushButton::clicked, this, &MusicPlayer::showPlayer);
     connect(ui->radioButton, &QPushButton::clicked, this, &MusicPlayer::showRadio);
 
@@ -69,7 +80,6 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     currentGif = std::rand() % gifImages.size();
     gifMovie = new QMovie(gifImages[currentGif]);
     ui->gifLabel->setMovie(gifMovie);
-
     // Горячие клавиши:
     QShortcut* playPauseShortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
     connect(playPauseShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonPlayPause_clicked);
@@ -80,20 +90,20 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     QShortcut* prevShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
     connect(prevShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonPrevious_clicked);
 
-    QShortcut* loopShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this);
+    QShortcut* loopShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_R), this);
     connect(loopShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonLoop_clicked);
 
-    QShortcut* randomShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    QShortcut* randomShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_S), this);
     connect(randomShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonRandom_clicked);
 
     QShortcut* volUpShortcut = new QShortcut(QKeySequence(Qt::Key_Up), this);
-    connect(volUpShortcut, &QShortcut::activated, [=]() {
+    connect(volUpShortcut, &QShortcut::activated, this, [=]() {
         int value = ui->volumeSlider->value();
         ui->volumeSlider->setValue(qMin(value + 10, 100));
     });
 
     QShortcut* volDownShortcut = new QShortcut(QKeySequence(Qt::Key_Down), this);
-    connect(volDownShortcut, &QShortcut::activated, [=]() {
+    connect(volDownShortcut, &QShortcut::activated, this, [=]() {
         int value = ui->volumeSlider->value();
         ui->volumeSlider->setValue(qMax(value - 10, 0));
     });
@@ -101,10 +111,10 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     QShortcut* muteShortcut = new QShortcut(QKeySequence(Qt::Key_M), this);
     connect(muteShortcut, &QShortcut::activated, this, &MusicPlayer::toggleMute);
 
-    QShortcut* addfolderShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
+    QShortcut* addfolderShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A), this);
     connect(addfolderShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonAdd_clicked);
 
-    QShortcut* clearShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    QShortcut* clearShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C), this);
     connect(clearShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonClear_clicked);
 }
 
@@ -155,7 +165,7 @@ void MusicPlayer::loadState() {
     s.beginGroup("PlayerState");
     QStringList paths = s.value("queueOrder").toStringList();
     playlist.clear();
-    for (const QString &fp : paths) {
+    for (const QString &fp : std::as_const(paths)) {
         Track t;
         t.filePath = fp;
         t.title    = QFileInfo(fp).baseName();
@@ -193,13 +203,11 @@ void MusicPlayer::loadState() {
     ui->buttonRandom->setText(randomOn ? "🔀: ON" : "🔀: OFF");
     ui->buttonLoop->setText(loopOn     ? "🔄: ON"   : "🔄: OFF");
 }
-
 void MusicPlayer::on_listWidget_itemDoubleClicked(QListWidgetItem* item) {
     int row = ui->listWidget->row(item);
     playlist.setCurrentIndex(row);
     musicController.play();
 }
-
 void MusicPlayer::on_listWidget_modelRowsMoved(const QModelIndex & /*parent*/,
                                                int sourceStart,
                                                int sourceEnd,      // Последняя строка диапазона, который переместили
@@ -215,8 +223,6 @@ void MusicPlayer::on_listWidget_modelRowsMoved(const QModelIndex & /*parent*/,
     playlist.insertTrack(to, moved);
     ui->listWidget->setCurrentRow(to);
 }
-
-
 void MusicPlayer::on_buttonPlayPause_clicked() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
         musicController.pause();
@@ -235,7 +241,6 @@ void MusicPlayer::on_buttonPlayPause_clicked() {
     }
     updatePlayPauseButton();
 }
-
 void MusicPlayer::updatePlayPauseButton() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
         ui->buttonPlayPause->setText("⏸");
@@ -243,9 +248,12 @@ void MusicPlayer::updatePlayPauseButton() {
         ui->buttonPlayPause->setText("▶️");
     }
 }
-
 void MusicPlayer::on_buttonNext_clicked() {
+    decoder->stopDecoding();
     musicController.next();
+    Track* currentTrack = playlist.getCurrentTrack();
+    if (currentTrack)
+        decoder->decodeFile(currentTrack->filePath);
     if (!playlist.getTracks().isEmpty()) {
         QString gifPath = updateGifImage();
         if (gifMovie) {
@@ -258,7 +266,6 @@ void MusicPlayer::on_buttonNext_clicked() {
         gifMovie->start();
     }
 }
-
 void MusicPlayer::on_buttonPrevious_clicked() {
     musicController.previous();
     if (!playlist.getTracks().isEmpty()) {
@@ -273,7 +280,6 @@ void MusicPlayer::on_buttonPrevious_clicked() {
         gifMovie->start();
     }
 }
-
 void MusicPlayer::on_buttonRandom_clicked() {
     musicController.toggleRandom();
     updatePlaylistUI();
@@ -285,7 +291,6 @@ void MusicPlayer::on_buttonRandom_clicked() {
         ui->buttonRandom->setText("🔀: OFF");
     }
 }
-
 void MusicPlayer::on_buttonLoop_clicked() {
     musicController.toggleLoop();
     if (musicController.isLoopEnabled()) {
@@ -294,7 +299,6 @@ void MusicPlayer::on_buttonLoop_clicked() {
         ui->buttonLoop->setText("🔄: OFF");
     }
 }
-
 void MusicPlayer::on_buttonAdd_clicked() {
     QString folderPath = QFileDialog::getExistingDirectory(this, "Select a folder with audio files");
     if (folderPath.isEmpty()) return;
@@ -303,7 +307,7 @@ void MusicPlayer::on_buttonAdd_clicked() {
     filters << "*.mp3" << "*.wav" << "*.flac" << "*.aac";
     dir.setNameFilters(filters);
     QFileInfoList fileList = dir.entryInfoList(QDir::Files);
-    for (const QFileInfo &fileInfo : fileList) {
+    for (const QFileInfo &fileInfo : std::as_const(fileList)) {
         Track newTrack;
         newTrack.filePath = fileInfo.absoluteFilePath();
         newTrack.title = fileInfo.baseName();
@@ -312,7 +316,6 @@ void MusicPlayer::on_buttonAdd_clicked() {
     updatePlaylistUI();
     playlist.resetShuffleState();
 }
-
 void MusicPlayer::on_buttonRemove_clicked() {
     int selectedIndex = ui->listWidget->currentRow();
     if (selectedIndex >= 0) {
@@ -324,7 +327,6 @@ void MusicPlayer::on_buttonRemove_clicked() {
         }
     }
 }
-
 void MusicPlayer::on_buttonClear_clicked() {
     playlist.clear();
     ui->listWidget->clear();
@@ -338,14 +340,12 @@ void MusicPlayer::on_buttonClear_clicked() {
     updateCurrentTrackInfo();
     emit musicController.trackChanged();
 }
-
 void MusicPlayer::on_volumeSlider_valueChanged(int value) {
     double volume = value / 100.0;
     musicController.setVolume(volume);
     QSettings s("IST", "MusicPlayer");
     s.setValue("volume", value);
 }
-
 void MusicPlayer::toggleMute() {
     if (!isMuted) {
         previousVolume = ui->volumeSlider->value();
@@ -356,19 +356,15 @@ void MusicPlayer::toggleMute() {
         isMuted = false;
     }
 }
-
 void MusicPlayer::on_positionSlider_sliderMoved(int position) {
     musicController.setPosition(position);
 }
-
 void MusicPlayer::updatePosition(qint64 position) {
     ui->labelCurrentTime->setText(formatTime(position));
 }
-
 void MusicPlayer::updateDuration(qint64 duration) {
     ui->labelTotalTime->setText(formatTime(duration));
 }
-
 QString MusicPlayer::formatTime(qint64 timeMillis) {
     int seconds = (timeMillis / 1000) % 60;
     int minutes = (timeMillis / 60000) % 60;
@@ -378,13 +374,13 @@ QString MusicPlayer::formatTime(qint64 timeMillis) {
     else
         return QTime(0, minutes, seconds).toString("mm:ss");
 }
-
 void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
     if (currentTrack) {
         ui->currentTrackLabel->setText(currentTrack->title);
         int idx = playlist.getCurrentIndex();
         ui->listWidget->setCurrentRow(idx);
+        decoder->decodeFile(currentTrack->filePath);
         QString gifPath = updateGifImage();
         if (!gifPath.isEmpty()) {
             if (gifMovie) {
@@ -402,7 +398,6 @@ void MusicPlayer::updateCurrentTrackInfo() {
     }
 }
 
-
 QString MusicPlayer::updateGifImage() {
     if (gifImages.isEmpty()) {
         qWarning() << "gifImages list is empty!";
@@ -415,7 +410,6 @@ QString MusicPlayer::updateGifImage() {
     currentGif = std::rand() % gifImages.size();
     return gifPath;
 }
-
 void MusicPlayer::showRadio() {
     ui->listWidget->setVisible(false);
     ui->progressFrame->setVisible(false);
@@ -440,7 +434,6 @@ void MusicPlayer::showRadio() {
         updatePlayPauseButton();
     }
 }
-
 void MusicPlayer::showPlayer() {
     ui->listWidget->setVisible(true);
     ui->progressFrame->setVisible(true);
@@ -463,3 +456,4 @@ void MusicPlayer::showPlayer() {
     radioPage->setVisible(false);
     ui->pageArea->lower();
 }
+

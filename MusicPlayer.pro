@@ -1,4 +1,4 @@
-QT       += core gui multimedia multimediawidgets
+QT       += core gui multimedia multimediawidgets openglwidgets opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,6 +9,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    audiovisualizer.cpp \
     main.cpp \
     musiccontroller.cpp \
     musicplayer.cpp \
@@ -16,6 +17,7 @@ SOURCES += \
     radio.cpp
 
 HEADERS += \
+    audiovisualizer.h \
     musiccontroller.h \
     musicplayer.h \
     playlist.h \
@@ -24,6 +26,8 @@ HEADERS += \
 
 FORMS += \
     musicplayer.ui
+
+LIBS += -lopengl32
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

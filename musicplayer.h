@@ -1,11 +1,11 @@
 #ifndef MUSICPLAYER_H
 #define MUSICPLAYER_H
-
 #include <QMainWindow>
 #include <QListWidget>
 #include <QFileDialog>
 #include <QDir>
 #include <QFileInfoList>
+#include <QAudioOutput>
 #include <QLabel>
 #include <QMovie>
 #include <QString>
@@ -14,25 +14,25 @@
 #include <QStackedWidget>
 #include <QSettings>
 #include <QCloseEvent>
+#include <QVector>
+#include <QByteArray>
 #include "playlist.h"
 #include "musiccontroller.h"
 #include "seekslider.h"
 #include "radio.h"
+#include "audiovisualizer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MusicPlayer;
 }
 QT_END_NAMESPACE
-
 class MusicPlayer : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit MusicPlayer(QWidget *parent = nullptr);
     ~MusicPlayer();
-
 private slots:
     void on_listWidget_modelRowsMoved(const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row);
     void on_listWidget_itemDoubleClicked(QListWidgetItem* item);
@@ -51,10 +51,8 @@ private slots:
     void toggleMute();
     void showRadio();
     void showPlayer();
-
 protected:
     void closeEvent(QCloseEvent *event) override;
-
 private:
     Ui::MusicPlayer *ui;
     QVBoxLayout *mainLayout;
@@ -75,6 +73,7 @@ private:
     bool isMuted = false;
     void saveState();
     void loadState();
+    AudioVisualizer *visualizer;
+    AudioDecoder *decoder;
 };
-
 #endif // MUSICPLAYER_H

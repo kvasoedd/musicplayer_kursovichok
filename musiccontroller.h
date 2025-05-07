@@ -1,15 +1,12 @@
 #ifndef MUSICCONTROLLER_H
 #define MUSICCONTROLLER_H
-
 #include <QObject>
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QSettings>
 #include "playlist.h"
-
 class MusicController : public QObject {
     Q_OBJECT
-
 public:
     explicit MusicController(QObject* parent = nullptr);
     void setPlaylist(Playlist* playlist);
@@ -31,12 +28,10 @@ public:
     void setPlaylist();
     void restartCurrentTrack();
     void setVolumeFromSlider(int sliderValue);
-
 signals:
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
     void trackChanged();
-
 private:
     QMediaPlayer* player;
     QAudioOutput* audioOutput;
@@ -44,5 +39,4 @@ private:
     bool randomEnabled = false;
     bool loopEnabled = false;
 };
-
 #endif // MUSICCONTROLLER_H
