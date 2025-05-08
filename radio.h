@@ -7,8 +7,15 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QString>
 #include <QListWidget>
 #include <QAudioOutput>
+#include <QHBoxLayout>
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QMenu>
 
 class Radio : public QWidget
 {
@@ -25,17 +32,23 @@ private slots:
     void addStation();
     void removeStation();
     void stationSelected();
+    void renameStation();
+    void showContextMenu(const QPoint &pos);
 
 private:
     QLineEdit *urlEdit;
     QPushButton *playButton;
     QSlider *streamVolume;
     QPushButton *addButton;
-    QPushButton *removeButton;
     QListWidget *stationList;
     QProcess *playerProcess;
     void loadStations();
     void saveStations();
+};
+
+struct Station {
+    QString name;
+    QString url;
 };
 
 #endif // RADIO_H

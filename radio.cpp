@@ -1,9 +1,4 @@
 #include "radio.h"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFile>
-#include <QTextStream>
-#include <QMessageBox>
 
 Radio::Radio(QWidget *parent)
     : QWidget(parent), playerProcess(new QProcess(this))
@@ -12,7 +7,6 @@ Radio::Radio(QWidget *parent)
     playButton = new QPushButton("▶️", this);
     addButton = new QPushButton("❤️ Add to favorites", this);
     streamVolume = new QSlider(Qt::Vertical);
-    removeButton = new QPushButton("❌ Delete from favorites", this);
     stationList = new QListWidget(this);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -20,21 +14,21 @@ Radio::Radio(QWidget *parent)
 
     controlsLayout->addWidget(urlEdit);
     controlsLayout->addWidget(playButton);
+    controlsLayout->addWidget(addButton);
     controlsLayout->addWidget(streamVolume);
     streamVolume->setRange(0, 100);
     streamVolume->setMaximumHeight(100);
     streamVolume->setValue(50);
 
     mainLayout->addLayout(controlsLayout);
-    mainLayout->addWidget(addButton);
-    mainLayout->addWidget(removeButton);
     mainLayout->addWidget(stationList);
+    stationList->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    connect(stationList, &QListWidget::customContextMenuRequested, this, &Radio::showContextMenu);
     connect(playButton, &QPushButton::clicked, this, [=]() {
         startStream(urlEdit->text());
     });
     connect(addButton, &QPushButton::clicked, this, &Radio::addStation);
-    connect(removeButton, &QPushButton::clicked, this, &Radio::removeStation);
     connect(stationList, &QListWidget::itemClicked, this, &Radio::stationSelected);
     connect(streamVolume, &QSlider::valueChanged, this, &Radio::setVolume);
 
@@ -60,7 +54,7 @@ void Radio::startStream(const QString &url) {
         arguments << "-nodisp" << "-autoexit" << "-loglevel" << "info" << "-volume" << QString::number(streamVolume->value())<< url;
         playerProcess->start(program, arguments);
         if (!playerProcess->waitForStarted(3000)) {
-            QMessageBox::critical(this, "Ошибка", "Не удалось запустить ffplay!");
+            QMessageBox::critical(this, "Error", "Failed to start ffplay!");
             playButton->setText("▶️");
         }
         else {
@@ -78,9 +72,21 @@ void Radio::StopStream(){
 }
 
 void Radio::addStation() {
-    QString url = urlEdit->text();
-    if (!url.isEmpty()) {
-        stationList->addItem(url);
+    QString url = urlEdit->text().trimmed();
+    if (url.isEmpty())
+        return;
+    for (int i = 0; i < stationList->count(); ++i) {
+        if (stationList->item(i)->data(Qt::UserRole).toString() == url) {
+            QMessageBox::information(this, "Duplicate", "This url is already in favorites.");
+            return;
+        }
+    }
+    bool ok;
+    QString name = QInputDialog::getText(this, "Add to favorites", "Station name:", QLineEdit::Normal, "", &ok);
+    if (ok && !name.trimmed().isEmpty()) {
+        QListWidgetItem *item = new QListWidgetItem(name.trimmed());
+        item->setData(Qt::UserRole, url);
+        stationList->addItem(item);
         saveStations();
     }
 }
@@ -96,18 +102,24 @@ void Radio::removeStation() {
 void Radio::stationSelected() {
     auto item = stationList->currentItem();
     if (item) {
-        urlEdit->setText(item->text());
+        StopStream();
+        QString url = item->data(Qt::UserRole).toString();
+        urlEdit->setText(url);
+        startStream(url);
     }
 }
 
 void Radio::loadStations() {
     QFile file("stations.txt");
-    if (file.open(QIODevice::ReadOnly)) {
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
         while (!in.atEnd()) {
             QString line = in.readLine();
-            if (!line.isEmpty()) {
-                stationList->addItem(line);
+            QStringList parts = line.split("|");
+            if (parts.size() == 2) {
+                QListWidgetItem *item = new QListWidgetItem(parts[0]);
+                item->setData(Qt::UserRole, parts[1]);
+                stationList->addItem(item);
             }
         }
     }
@@ -115,10 +127,13 @@ void Radio::loadStations() {
 
 void Radio::saveStations() {
     QFile file("stations.txt");
-    if (file.open(QIODevice::WriteOnly)) {
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
         for (int i = 0; i < stationList->count(); ++i) {
-            out << stationList->item(i)->text() << "\n";
+            QListWidgetItem *item = stationList->item(i);
+            QString name = item->text();
+            QString url = item->data(Qt::UserRole).toString();
+            out << name << "|" << url << "\n";
         }
     }
 }
@@ -129,5 +144,34 @@ void Radio::setVolume(int volume) {
         playerProcess->kill();
         playerProcess->waitForFinished();
         startStream(currentUrl);
+    }
+}
+
+void Radio::renameStation() {
+    auto item = stationList->currentItem();
+    if (!item) return;
+    bool ok;
+    QString currentName = item->text();
+    QString newName = QInputDialog::getText(this, "Rename station",
+                                            "New name:",
+                                            QLineEdit::Normal,
+                                            currentName, &ok);
+    if (ok && !newName.trimmed().isEmpty()) {
+        item->setText(newName.trimmed());
+        saveStations();
+    }
+}
+
+void Radio::showContextMenu(const QPoint &pos) {
+    QListWidgetItem *item = stationList->itemAt(pos);
+    if (!item) return;
+    QMenu menu(this);
+    QAction *renameAction = menu.addAction("Rename");
+    QAction *deleteAction = menu.addAction("Delete");
+    QAction *selectedAction = menu.exec(stationList->viewport()->mapToGlobal(pos));
+    if (selectedAction == renameAction) {
+        renameStation();
+    } else if (selectedAction == deleteAction) {
+        removeStation();
     }
 }

@@ -402,7 +402,6 @@ void MusicPlayer::updateCurrentTrackInfo() {
     }
 }
 
-
 QString MusicPlayer::updateGifImage() {
     if (gifImages.isEmpty()) {
         qWarning() << "gifImages list is empty!";
@@ -411,9 +410,12 @@ QString MusicPlayer::updateGifImage() {
     if (playlist.getTracks().isEmpty()) {
         return "";
     }
-    QString gifPath = gifImages[currentGif];
-    currentGif = std::rand() % gifImages.size();
-    return gifPath;
+    int previousGif = currentGif;
+    do {
+        currentGif = std::rand() % gifImages.size();
+    } while (gifImages.size() > 1 && currentGif == previousGif);
+
+    return gifImages[currentGif];
 }
 
 void MusicPlayer::showRadio() {

@@ -71,6 +71,7 @@ private:
     QMovie* gifMovie = nullptr;
     int currentGif = 0;
     QString updateGifImage();
+    QVector<int> gifQueue;
     int previousVolume = 100;
     bool isMuted = false;
     void saveState();
