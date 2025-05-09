@@ -93,12 +93,10 @@ void Playlist::disableShuffle() {
     }
 }
 
-
 void Playlist::resetShuffleState() {
     originalTracks.clear();
     isShuffled = false;
 }
-
 
 void Playlist::setCurrentIndex(int index) {
     if (index >= 0 && index < tracks.size())

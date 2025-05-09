@@ -21,6 +21,15 @@ void MusicController::setPlaylist(Playlist* playlist) {
     this->playlist = playlist;
 }
 
+void MusicController::setTrack() {
+    Track* currentTrack = playlist->getCurrentTrack();
+    if (currentTrack) {
+        player->setSource(QUrl::fromLocalFile(currentTrack->filePath));
+        player->play();
+        emit trackChanged();
+    }
+}
+
 void MusicController::stop() {
     player->stop();
     player->setSource(QUrl());

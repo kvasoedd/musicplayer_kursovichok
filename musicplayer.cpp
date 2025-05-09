@@ -197,7 +197,11 @@ void MusicPlayer::loadState() {
 void MusicPlayer::on_listWidget_itemDoubleClicked(QListWidgetItem* item) {
     int row = ui->listWidget->row(item);
     playlist.setCurrentIndex(row);
-    musicController.play();
+    Track* track = playlist.getCurrentTrack();
+    if (track) {
+        musicController.setTrack();
+        musicController.play();
+    }
 }
 
 void MusicPlayer::on_listWidget_modelRowsMoved(const QModelIndex & /*parent*/,
@@ -210,12 +214,20 @@ void MusicPlayer::on_listWidget_modelRowsMoved(const QModelIndex & /*parent*/,
     // destinationRow — место вставки (до какого индекса)
     int from = sourceStart;
     int to = destinationRow > from ? destinationRow - 1 : destinationRow;
+    Track* currentTrack = playlist.getCurrentTrack();
+    QString currentPath = currentTrack ? currentTrack->filePath : "";
     Track moved = playlist.getTracks().at(from);
     playlist.removeTrack(from);
     playlist.insertTrack(to, moved);
     ui->listWidget->setCurrentRow(to);
+    const auto& tracks = playlist.getTracks();
+    for (int i = 0; i < tracks.size(); ++i) {
+        if (tracks[i].filePath == currentPath) {
+            playlist.setCurrentIndex(i);
+            break;
+        }
+    }
 }
-
 
 void MusicPlayer::on_buttonPlayPause_clicked() {
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {

@@ -13,6 +13,7 @@ class MusicController : public QObject {
 public:
     explicit MusicController(QObject* parent = nullptr);
     void setPlaylist(Playlist* playlist);
+    void setTrack();
     void play();
     void next();
     void previous();
