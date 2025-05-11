@@ -59,6 +59,8 @@ private:
     Ui::MusicPlayer *ui;
     QVBoxLayout *mainLayout;
     Playlist playlist;
+    QStringList loadedFolders;
+    QLabel* foldersLabel;
     MusicController musicController;
     Radio *radioPage = nullptr;
     void updatePlaylistUI();

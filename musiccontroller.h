@@ -36,7 +36,6 @@ public:
 signals:
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
-    void trackChanged();
 
 private:
     QMediaPlayer* player;

@@ -4,7 +4,6 @@
         <file>gifs/lofi-girl-lofi.gif</file>
         <file>gifs/cat-headphones.gif</file>
         <file>gifs/gyllenhaal.gif</file>
-        <file>gifs/dadada.gif</file>
         <file>gifs/monke.gif</file>
         <file>gifs/girl.gif</file>
         <file>gifs/cant-sleep-to-the-beat.gif</file>
@@ -16,5 +15,11 @@
         <file>gifs/bateman.gif</file>
         <file>gifs/spongebob.gif</file>
         <file>gifs/starlord.gif</file>
+        <file>gifs/funky.gif</file>
+        <file>gifs/greycat.gif</file>
+        <file>gifs/cat_jam.gif</file>
+        <file>gifs/komaru.gif</file>
+        <file>gifs/necoarc.gif</file>
+        <file>gifs/vibe.gif</file>
     </qresource>
 </RCC>

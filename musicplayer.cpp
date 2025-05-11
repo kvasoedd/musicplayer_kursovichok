@@ -28,6 +28,7 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     positionSlider->setOrientation(Qt::Horizontal);
     positionSlider->setRange(0, 0);
     ui->progressLayout->addWidget(positionSlider);
+    ui->trackMetadataLabel->setStyleSheet("QLabel { color : #475aff; }");
 
     connect(ui->playerButton, &QPushButton::clicked, this, &MusicPlayer::showPlayer);
     connect(ui->radioButton, &QPushButton::clicked, this, &MusicPlayer::showRadio);
@@ -43,18 +44,17 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     connect(&musicController, &MusicController::durationChanged, positionSlider, &QSlider::setMaximum);
     connect(&musicController, &MusicController::positionChanged, this, &MusicPlayer::updatePosition);
     connect(&musicController, &MusicController::durationChanged, this, &MusicPlayer::updateDuration);
-    connect(&musicController, &MusicController::trackChanged, this, &MusicPlayer::updateCurrentTrackInfo);
+    connect(musicController.getPlayer(), &QMediaPlayer::metaDataChanged, this, &MusicPlayer::updateCurrentTrackInfo);
     connect(musicController.getPlayer(), &QMediaPlayer::playbackStateChanged, this, &MusicPlayer::updatePlayPauseButton);
 
     updatePlayPauseButton();
 
     gifLabel = new QLabel(this);
-    gifLabel->setVisible(false);
     gifImages << ":/imgs/gifs/christian-bale-american-psycho.gif"
               << ":/imgs/gifs/lofi-girl-lofi.gif"
               << ":/imgs/gifs/cat-headphones.gif"
               << ":/imgs/gifs/gyllenhaal.gif"
-              << ":/imgs/gifs/dadada.gif"
+              << ":/imgs/gifs/vibe.gif"
               << ":/imgs/gifs/monke.gif"
               << ":/imgs/gifs/girl.gif"
               << ":/imgs/gifs/cant-sleep-to-the-beat.gif"
@@ -65,10 +65,15 @@ MusicPlayer::MusicPlayer(QWidget *parent)
               << ":/imgs/gifs/kid.gif"
               << ":/imgs/gifs/bateman.gif"
               << ":/imgs/gifs/spongebob.gif"
-              << ":/imgs/gifs/starlord.gif";
+              << ":/imgs/gifs/starlord.gif"
+              << ":/imgs/gifs/funky.gif"
+              << ":/imgs/gifs/komaru.gif"
+              << ":/imgs/gifs/cat_jam.gif"
+              << ":/imgs/gifs/greycat.gif"
+              << ":/imgs/gifs/necoarc.gif";
     currentGif = std::rand() % gifImages.size();
     gifMovie = new QMovie(gifImages[currentGif]);
-    ui->gifLabel->setMovie(gifMovie);
+    gifLabel->setVisible(false);
 
     // Горячие клавиши:
     QShortcut* playPauseShortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
@@ -143,6 +148,7 @@ void MusicPlayer::saveState() {
     else
         s.remove("currentTrackPath");
     s.setValue("queueOrder", paths);
+    s.setValue("loadedFolders", loadedFolders);
     s.setValue("currentIndex", playlist.getCurrentIndex());
     s.setValue("randomEnabled", musicController.isRandomEnabled());
     s.setValue("loopEnabled",   musicController.isLoopEnabled());
@@ -161,6 +167,12 @@ void MusicPlayer::loadState() {
         t.title    = QFileInfo(fp).baseName();
         playlist.addTrack(t);
     }
+    loadedFolders = s.value("loadedFolders").toStringList();
+    QStringList folderNames;
+    for (const QString& path : loadedFolders) {
+        folderNames << QDir(path).dirName();
+    }
+    ui->Folders->setText(folderNames.join(", "));
     bool randomOn = s.value("randomEnabled", false).toBool();
     musicController.setRandomEnabled(randomOn);
     playlist.resetShuffleState();
@@ -258,32 +270,10 @@ void MusicPlayer::updatePlayPauseButton() {
 
 void MusicPlayer::on_buttonNext_clicked() {
     musicController.next();
-    if (!playlist.getTracks().isEmpty()) {
-        QString gifPath = updateGifImage();
-        if (gifMovie) {
-            gifMovie->stop();
-            delete gifMovie;
-        }
-        gifMovie = new QMovie(gifPath);
-        ui->gifLabel->setMovie(gifMovie);
-        ui->gifLabel->setVisible(true);
-        gifMovie->start();
-    }
 }
 
 void MusicPlayer::on_buttonPrevious_clicked() {
     musicController.previous();
-    if (!playlist.getTracks().isEmpty()) {
-        QString gifPath = updateGifImage();
-        if (gifMovie) {
-            gifMovie->stop();
-            delete gifMovie;
-        }
-        gifMovie = new QMovie(gifPath);
-        ui->gifLabel->setMovie(gifMovie);
-        ui->gifLabel->setVisible(true);
-        gifMovie->start();
-    }
 }
 
 void MusicPlayer::on_buttonRandom_clicked() {
@@ -311,6 +301,14 @@ void MusicPlayer::on_buttonAdd_clicked() {
     QString folderPath = QFileDialog::getExistingDirectory(this, "Select a folder with audio files");
     if (folderPath.isEmpty()) return;
     QDir dir(folderPath);
+    if (!loadedFolders.contains(folderPath)) {
+        loadedFolders.append(folderPath);
+    }
+    QStringList folderNames;
+    for (const QString& path : loadedFolders) {
+        folderNames << QDir(path).dirName();
+    }
+    ui->Folders->setText(folderNames.join(", "));
     QStringList filters;
     filters << "*.mp3" << "*.wav" << "*.flac" << "*.aac";
     dir.setNameFilters(filters);
@@ -328,8 +326,26 @@ void MusicPlayer::on_buttonAdd_clicked() {
 void MusicPlayer::on_buttonRemove_clicked() {
     int selectedIndex = ui->listWidget->currentRow();
     if (selectedIndex >= 0) {
+        QString removedTrackPath = playlist.tracks[selectedIndex].filePath;
+        QDir removedTrackDir = QFileInfo(removedTrackPath).absoluteDir();
         playlist.removeTrack(selectedIndex);
         updatePlaylistUI();
+        bool foundSameDirectory = false;
+        for (const auto& track : playlist.tracks) {
+            QDir trackDir = QFileInfo(track.filePath).absoluteDir();
+            if (trackDir == removedTrackDir) {
+                foundSameDirectory = true;
+                break;
+            }
+        }
+        if (!foundSameDirectory) {
+            loadedFolders.removeAll(removedTrackDir.absolutePath());
+            QStringList folderNames;
+            for (const QString& path : loadedFolders) {
+                folderNames << QDir(path).dirName();
+            }
+            ui->Folders->setText(folderNames.join(", "));
+        }
         if (playlist.tracks.size() == 0) {
             on_buttonClear_clicked();
             updatePlaylistUI();
@@ -339,16 +355,17 @@ void MusicPlayer::on_buttonRemove_clicked() {
 
 void MusicPlayer::on_buttonClear_clicked() {
     playlist.clear();
+    loadedFolders.clear();
     ui->listWidget->clear();
     musicController.stop();
     positionSlider->setValue(0);
     positionSlider->setRange(0, 0);
     ui->labelCurrentTime->setText("00:00");
     ui->labelTotalTime->setText("00:00");
+    ui->Folders->setText("");
     ui->currentTrackLabel->setText("No tracks to play =(");
     updatePlayPauseButton();
     updateCurrentTrackInfo();
-    emit musicController.trackChanged();
 }
 
 void MusicPlayer::on_volumeSlider_valueChanged(int value) {
@@ -394,23 +411,47 @@ QString MusicPlayer::formatTime(qint64 timeMillis) {
 void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
     if (currentTrack) {
-        ui->currentTrackLabel->setText(currentTrack->title);
+        QMediaMetaData meta = musicController.getPlayer()->metaData();
+        QString title = meta.value(QMediaMetaData::Title).toString();
+        QString artist = meta.value(QMediaMetaData::ContributingArtist).toStringList().join(", ");
+        QString titleText = QString("%1 %2").arg(artist.isEmpty() ? "" : artist + " -").arg(title.isEmpty() ? currentTrack->title : title);
+        ui->currentTrackLabel->setText(titleText);
+        QString folderName = QFileInfo(currentTrack->filePath).dir().dirName();
+        QString bitrate = meta.value(QMediaMetaData::AudioBitRate).toString();
+        QString format = meta.value(QMediaMetaData::FileFormat).toString();
+        QString metaText = QString("%1 | %2 | %3 bps")
+                               .arg(folderName)
+                               .arg(format.isEmpty() ? "?" : format)
+                               .arg(bitrate.isEmpty() ? "?" : bitrate);
+
+        ui->trackMetadataLabel->setText(metaText);
         int idx = playlist.getCurrentIndex();
         ui->listWidget->setCurrentRow(idx);
-        QString gifPath = updateGifImage();
-        if (!gifPath.isEmpty()) {
-            if (gifMovie) {
-                gifMovie->stop();
-                delete gifMovie;
-            }
-            gifMovie = new QMovie(gifPath);
-            ui->gifLabel->setMovie(gifMovie);
+        QVariant cover = meta.value(QMediaMetaData::ThumbnailImage);
+        if (cover.canConvert<QImage>()) {
+            QImage image = cover.value<QImage>();
+            QPixmap pixmap = QPixmap::fromImage(image);
+            ui->gifLabel->setPixmap(pixmap.scaled(ui->gifLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
             ui->gifLabel->setVisible(true);
-            gifMovie->start();
+            if (gifMovie) gifMovie->stop();
+        } else {
+            QString gifPath = updateGifImage();
+            if (!gifPath.isEmpty()) {
+                if (gifMovie) {
+                    gifMovie->stop();
+                    delete gifMovie;
+                }
+                gifMovie = new QMovie(gifPath);
+                ui->gifLabel->setMovie(gifMovie);
+                ui->gifLabel->setVisible(true);
+                gifMovie->start();
+            }
         }
     } else {
         ui->currentTrackLabel->setText("No tracks to play =(");
+        ui->trackMetadataLabel->setText("");
         ui->gifLabel->setVisible(false);
+        return;
     }
 }
 
@@ -422,30 +463,17 @@ QString MusicPlayer::updateGifImage() {
     if (playlist.getTracks().isEmpty()) {
         return "";
     }
-    int previousGif = currentGif;
-    do {
-        currentGif = std::rand() % gifImages.size();
-    } while (gifImages.size() > 1 && currentGif == previousGif);
-
-    return gifImages[currentGif];
+    QString gifPath = gifImages[currentGif];
+    currentGif = std::rand() % gifImages.size();
+    return gifPath;
 }
 
 void MusicPlayer::showRadio() {
-    ui->listWidget->setVisible(false);
-    ui->progressFrame->setVisible(false);
-    ui->buttonPlayPause->setVisible(false);
-    ui->buttonNext->setVisible(false);
-    ui->buttonPrevious->setVisible(false);
-    ui->buttonRandom->setVisible(false);
-    ui->buttonLoop->setVisible(false);
-    ui->buttonAdd->setVisible(false);
-    ui->buttonRemove->setVisible(false);
-    ui->buttonClear->setVisible(false);
+    ui->Playlist_controls->setVisible(false);
+    ui->Folders->setVisible(false);
+    ui->Controls->setVisible(false);
+    ui->trackMetadataLabel->setVisible(false);
     ui->volumeSlider->setVisible(false);
-    ui->labelCurrentTime->setVisible(false);
-    ui->labelTotalTime->setVisible(false);
-    ui->currentTrackLabel->setVisible(false);
-    ui->gifLabel->setVisible(false);
     radioPage->setVisible(true);
     ui->pageArea->raise();
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
@@ -456,20 +484,11 @@ void MusicPlayer::showRadio() {
 }
 
 void MusicPlayer::showPlayer() {
-    ui->listWidget->setVisible(true);
-    ui->progressFrame->setVisible(true);
-    ui->buttonPlayPause->setVisible(true);
-    ui->buttonNext->setVisible(true);
-    ui->buttonPrevious->setVisible(true);
-    ui->buttonRandom->setVisible(true);
-    ui->buttonLoop->setVisible(true);
-    ui->buttonAdd->setVisible(true);
-    ui->buttonRemove->setVisible(true);
-    ui->buttonClear->setVisible(true);
+    ui->Playlist_controls->setVisible(true);
+    ui->Folders->setVisible(true);
+    ui->Controls->setVisible(true);
     ui->volumeSlider->setVisible(true);
-    ui->labelCurrentTime->setVisible(true);
-    ui->labelTotalTime->setVisible(true);
-    ui->currentTrackLabel->setVisible(true);
+    ui->trackMetadataLabel->setVisible(true);
     if (!playlist.getTracks().isEmpty()) {
         ui->gifLabel->setVisible(true);
     }

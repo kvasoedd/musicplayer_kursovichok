@@ -26,7 +26,6 @@ void MusicController::setTrack() {
     if (currentTrack) {
         player->setSource(QUrl::fromLocalFile(currentTrack->filePath));
         player->play();
-        emit trackChanged();
     }
 }
 
@@ -46,7 +45,6 @@ void MusicController::play() {
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
-        emit trackChanged();
     }
 }
 
@@ -69,7 +67,6 @@ void MusicController::next() {
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
-        emit trackChanged();
     }
 }
 
@@ -79,7 +76,6 @@ void MusicController::previous() {
     if (track) {
         player->setSource(QUrl::fromLocalFile(track->filePath));
         player->play();
-        emit trackChanged();
     }
 }
 
@@ -101,7 +97,6 @@ void MusicController::restartCurrentTrack() {
     if (track) {
         player->setPosition(0);
         player->play();
-        emit trackChanged();
     }
 }
 
