@@ -76,6 +76,7 @@ MusicPlayer::MusicPlayer(QWidget *parent)
     gifLabel->setVisible(false);
 
     // Горячие клавиши:
+
     QShortcut* playPauseShortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
     connect(playPauseShortcut, &QShortcut::activated, this, &MusicPlayer::on_buttonPlayPause_clicked);
 
@@ -242,6 +243,7 @@ void MusicPlayer::on_listWidget_modelRowsMoved(const QModelIndex & /*parent*/,
 }
 
 void MusicPlayer::on_buttonPlayPause_clicked() {
+    if (isRadioMode) return;
     if (musicController.getPlaybackState() == QMediaPlayer::PlayingState) {
         musicController.pause();
         gifMovie->stop();
@@ -269,14 +271,17 @@ void MusicPlayer::updatePlayPauseButton() {
 }
 
 void MusicPlayer::on_buttonNext_clicked() {
+    if (isRadioMode) return;
     musicController.next();
 }
 
 void MusicPlayer::on_buttonPrevious_clicked() {
+    if (isRadioMode) return;
     musicController.previous();
 }
 
 void MusicPlayer::on_buttonRandom_clicked() {
+    if (isRadioMode) return;
     musicController.toggleRandom();
     updatePlaylistUI();
     int idx = playlist.getCurrentIndex();
@@ -289,6 +294,7 @@ void MusicPlayer::on_buttonRandom_clicked() {
 }
 
 void MusicPlayer::on_buttonLoop_clicked() {
+    if (isRadioMode) return;
     musicController.toggleLoop();
     if (musicController.isLoopEnabled()) {
         ui->buttonLoop->setText("🔄: ON");
@@ -298,6 +304,7 @@ void MusicPlayer::on_buttonLoop_clicked() {
 }
 
 void MusicPlayer::on_buttonAdd_clicked() {
+    if (isRadioMode) return;
     QString folderPath = QFileDialog::getExistingDirectory(this, "Select a folder with audio files");
     if (folderPath.isEmpty()) return;
     QDir dir(folderPath);
@@ -354,6 +361,7 @@ void MusicPlayer::on_buttonRemove_clicked() {
 }
 
 void MusicPlayer::on_buttonClear_clicked() {
+    if (isRadioMode) return;
     playlist.clear();
     loadedFolders.clear();
     ui->listWidget->clear();
@@ -376,6 +384,7 @@ void MusicPlayer::on_volumeSlider_valueChanged(int value) {
 }
 
 void MusicPlayer::toggleMute() {
+    if (isRadioMode) return;
     if (!isMuted) {
         previousVolume = ui->volumeSlider->value();
         ui->volumeSlider->setValue(0);
@@ -417,10 +426,12 @@ void MusicPlayer::updateCurrentTrackInfo() {
         QString titleText = QString("%1 %2").arg(artist.isEmpty() ? "" : artist + " -").arg(title.isEmpty() ? currentTrack->title : title);
         ui->currentTrackLabel->setText(titleText);
         QString folderName = QFileInfo(currentTrack->filePath).dir().dirName();
+        QString genre = meta.value(QMediaMetaData::Genre).toString();
         QString bitrate = meta.value(QMediaMetaData::AudioBitRate).toString();
         QString format = meta.value(QMediaMetaData::FileFormat).toString();
-        QString metaText = QString("%1 | %2 | %3 bps")
+        QString metaText = QString("%1 | %2 | %3 | %4 bps")
                                .arg(folderName)
+                               .arg(genre.isEmpty() ? "?" : genre)
                                .arg(format.isEmpty() ? "?" : format)
                                .arg(bitrate.isEmpty() ? "?" : bitrate);
 
@@ -469,6 +480,7 @@ QString MusicPlayer::updateGifImage() {
 }
 
 void MusicPlayer::showRadio() {
+    isRadioMode = true;
     ui->Playlist_controls->setVisible(false);
     ui->Folders->setVisible(false);
     ui->Controls->setVisible(false);
@@ -484,6 +496,7 @@ void MusicPlayer::showRadio() {
 }
 
 void MusicPlayer::showPlayer() {
+    isRadioMode = false;
     ui->Playlist_controls->setVisible(true);
     ui->Folders->setVisible(true);
     ui->Controls->setVisible(true);

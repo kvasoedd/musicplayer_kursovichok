@@ -78,6 +78,7 @@ private:
     bool isMuted = false;
     void saveState();
     void loadState();
+    bool isRadioMode = false;
 };
 
 #endif // MUSICPLAYER_H
