@@ -24,7 +24,8 @@ MusicPlayer::MusicPlayer(QWidget *parent)
 
     musicController.setPlaylist(&playlist);
 
-    positionSlider = new SeekSlider(this);
+    positionSlider = musicController.getSeekSlider();
+    positionSlider->setParent(this);
     positionSlider->setOrientation(Qt::Horizontal);
     positionSlider->setRange(0, 0);
     ui->progressLayout->addWidget(positionSlider);
@@ -421,7 +422,7 @@ void MusicPlayer::updateCurrentTrackInfo() {
     Track* currentTrack = playlist.getCurrentTrack();
     if (currentTrack) {
         QMediaMetaData meta = musicController.getPlayer()->metaData();
-        QString title = meta.value(QMediaMetaData::Title).toString();
+        QString title = currentTrack->title;
         QString artist = meta.value(QMediaMetaData::ContributingArtist).toStringList().join(", ");
         QString titleText = QString("%1 %2").arg(artist.isEmpty() ? "" : artist + " -").arg(title.isEmpty() ? currentTrack->title : title);
         ui->currentTrackLabel->setText(titleText);

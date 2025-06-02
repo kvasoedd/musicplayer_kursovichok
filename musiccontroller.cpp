@@ -5,6 +5,7 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
+    seekSlider = new SeekSlider(nullptr);
     connect(player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
         if (status == QMediaPlayer::EndOfMedia) {
             if (isLoopEnabled()) {
@@ -16,7 +17,9 @@ MusicController::MusicController(QObject* parent) : QObject(parent) {
     });
     connect(player, &QMediaPlayer::positionChanged, this, &MusicController::positionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &MusicController::durationChanged);
+    connect(seekSlider, &QSlider::sliderMoved, this, &MusicController::setPosition);
 }
+
 void MusicController::setPlaylist(Playlist* playlist) {
     this->playlist = playlist;
 }
@@ -132,4 +135,8 @@ void MusicController::setVolumeFromSlider(int sliderValue) {
 
 void MusicController::setPosition(qint64 position) {
     player->setPosition(position);
+}
+
+SeekSlider* MusicController::getSeekSlider() const {
+    return seekSlider;
 }

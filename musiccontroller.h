@@ -5,7 +5,26 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QSettings>
+#include <QSlider>
+#include <QMouseEvent>
 #include "playlist.h"
+
+class SeekSlider : public QSlider {
+    Q_OBJECT
+
+public:
+    explicit SeekSlider(QWidget* parent = nullptr) : QSlider(parent) {}
+
+protected:
+    void mousePressEvent(QMouseEvent* event) override {
+        if (orientation() == Qt::Horizontal) {
+            double pos = static_cast<double>(event->position().x()) / width();
+            setValue(static_cast<int>(pos * maximum()));
+            emit sliderMoved(value());
+        }
+        QSlider::mousePressEvent(event);
+    }
+};
 
 class MusicController : public QObject {
     Q_OBJECT
@@ -32,6 +51,7 @@ public:
     void setPlaylist();
     void restartCurrentTrack();
     void setVolumeFromSlider(int sliderValue);
+    SeekSlider* getSeekSlider() const;
 
 signals:
     void positionChanged(qint64 position);
@@ -43,6 +63,7 @@ private:
     Playlist* playlist = nullptr;
     bool randomEnabled = false;
     bool loopEnabled = false;
+    SeekSlider* seekSlider;
 };
 
 #endif // MUSICCONTROLLER_H

@@ -14,9 +14,7 @@
 #include <QStackedWidget>
 #include <QSettings>
 #include <QCloseEvent>
-#include "playlist.h"
 #include "musiccontroller.h"
-#include "seekslider.h"
 #include "radio.h"
 
 QT_BEGIN_NAMESPACE

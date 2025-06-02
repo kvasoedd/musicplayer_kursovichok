@@ -19,8 +19,7 @@ HEADERS += \
     musiccontroller.h \
     musicplayer.h \
     playlist.h \
-    radio.h \
-    seekslider.h
+    radio.h
 
 FORMS += \
     musicplayer.ui

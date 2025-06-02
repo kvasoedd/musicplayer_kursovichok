@@ -9,10 +9,6 @@
 struct Track {
     QString filePath;
     QString title;
-    QString artist;
-    QString duration;
-    QString bitrate;
-    QString album;
 };
 
 class Playlist {
